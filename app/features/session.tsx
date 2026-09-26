@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { fromUint8Array, useMobileWallet } from '@wallet-ui/react-native-web3js'
 import * as SecureStore from 'expo-secure-store'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Buffer } from 'buffer'
 import { api } from './api'
 
 interface Session {
@@ -63,10 +64,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const input = await api<Record<string, string>>('/v1/auth/challenge', { method: 'POST' })
       const result = await wallet.signIn(input)
-      const address = result.account.address.toBase58()
+      const signedMessage = unwrapBase64(result.signedMessage, (b) => b.toString('utf8').includes(' wants you to sign in'))
+      const signature = unwrapBase64(result.signature, (b) => b.length === 64)
+      // The SIWS message names the signing account on its second line; the server
+      // verifies the signature against it, so it is the most reliable source.
+      const address = Buffer.from(signedMessage).toString('utf8').split('\n')[1] ?? accountAddress(result.account)
       const verified = await api<{ token: string; expiresAt: number }>('/v1/auth/verify', {
         method: 'POST',
-        body: { address, signedMessage: fromUint8Array(result.signedMessage), signature: fromUint8Array(result.signature) },
+        body: { address, signedMessage: fromUint8Array(signedMessage), signature: fromUint8Array(signature) },
       })
       await persist({ address, token: verified.token, expiresAt: verified.expiresAt })
       await queryClient.invalidateQueries()
@@ -106,4 +111,24 @@ export function describeWalletError(e: any): string {
   }
   if (/blockhash|expired/i.test(msg)) return 'The request expired before it was confirmed. Please try again.'
   return msg.length < 160 ? msg : 'Something went wrong. Please try again.'
+}
+
+/**
+ * Some wallet/adapter combinations return the base64 *text* of a value as bytes rather
+ * than the decoded bytes. If `bytes` is ASCII base64 whose decoding passes `looksRight`,
+ * return the decoded bytes; otherwise return `bytes` unchanged.
+ */
+function unwrapBase64(bytes: Uint8Array, looksRight: (decoded: Buffer) => boolean): Uint8Array {
+  const raw = Buffer.from(bytes)
+  if (looksRight(raw)) return bytes
+  const text = raw.toString('latin1')
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(text)) return bytes
+  const decoded = Buffer.from(text, 'base64')
+  return looksRight(decoded) ? new Uint8Array(decoded) : bytes
+}
+
+function accountAddress(account: any): string {
+  if (account?.publicKey?.toBase58) return account.publicKey.toBase58()
+  if (account?.address?.toBase58) return account.address.toBase58()
+  return String(account?.address ?? '')
 }

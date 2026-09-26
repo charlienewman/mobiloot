@@ -1,4 +1,5 @@
 // Sign In With Solana (SIWS). The server issues a single-use, expiring nonce and the
+import fs from 'node:fs'
 // fields of the message; the wallet formats and signs it during the Mobile Wallet
 // Adapter `authorize` call, so connecting and signing in is one wallet handoff. The
 // server verifies the ed25519 signature over the exact signed bytes, then checks that
@@ -76,6 +77,7 @@ export function verifySignIn(
     signature = decodeBytes(args.signature)
     if (signature.length !== 64) throw new Error()
   } catch {
+    fs.writeFileSync('/tmp/claude-1000/-home-charlie-Documents-Web-clockin/b45bc483-1e93-40fc-884a-2efa1fa2f627/scratchpad/siws.json', JSON.stringify(args))
     throw new AuthError('Malformed sign-in')
   }
   if (!nacl.sign.detached.verify(message, signature, address.toBytes())) throw new AuthError('Invalid signature')

@@ -36,7 +36,15 @@ export function Wordmark({ size = 22 }: { size?: number }) {
 }
 
 /** Circular gauge: how much of the plan's cost the user's stake currently covers. */
-export function CoverageRing({ value, size = 220, children }: { value: number; size?: number; children?: React.ReactNode }) {
+export function CoverageRing({
+  value,
+  size = 220,
+  children,
+}: {
+  value: number
+  size?: number
+  children?: React.ReactNode
+}) {
   const stroke = 16
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
@@ -51,17 +59,19 @@ export function CoverageRing({ value, size = 220, children }: { value: number; s
           </LinearGradient>
         </Defs>
         <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.surfaceRaised} strokeWidth={stroke} fill="none" />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke="url(#ring)"
-          strokeWidth={stroke}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={`${c * shown} ${c}`}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
+        {shown > 0.005 ? (
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke="url(#ring)"
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={`${c * shown} ${c}`}
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          />
+        ) : null}
       </Svg>
       {children}
     </View>

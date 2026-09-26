@@ -1,7 +1,7 @@
 // Builds, simulates, signs (via Mobile Wallet Adapter) and confirms the three user
 // transactions: deposit SOL for zeroSOL, withdraw SOL, and activate the plan.
 import { useQueryClient } from '@tanstack/react-query'
-import { PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
+import { Connection, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
 import * as Haptics from 'expo-haptics'
 import { useCallback, useState } from 'react'
@@ -60,8 +60,7 @@ export function useTransactions() {
         }
 
         setState({ step: 'confirming', kind, signature })
-        const result = await connection.confirmTransaction({ signature, ...blockhash }, 'confirmed')
-        if (result.value.err) throw new Error(JSON.stringify(result.value.err))
+        await confirmByPolling(connection, signature, blockhash.lastValidBlockHeight)
 
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         setState({ step: 'done', kind, signature })
@@ -116,6 +115,23 @@ export function useTransactions() {
 
   const reset = useCallback(() => setState({ step: 'idle' }), [])
   return { state, deposit, withdraw, activate, reset }
+}
+
+/**
+ * Polls signature status over HTTP instead of web3.js's websocket subscription, which is
+ * unreliable on mobile networks and unavailable through adb port forwarding.
+ */
+async function confirmByPolling(connection: Connection, signature: string, lastValidBlockHeight: number) {
+  for (;;) {
+    const { value } = await connection.getSignatureStatuses([signature])
+    const status = value[0]
+    if (status?.err) throw new Error(JSON.stringify(status.err))
+    if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') return
+    if ((await connection.getBlockHeight('confirmed')) > lastValidBlockHeight) {
+      throw new Error('Transaction expired: blockhash expired before confirmation')
+    }
+    await new Promise((r) => setTimeout(r, 800))
+  }
 }
 
 function describeTxError(e: any): string {

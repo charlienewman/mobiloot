@@ -70,8 +70,8 @@ export default function Home() {
 
       {config.cluster !== 'mainnet-beta' ? (
         <Notice tone="warn">
-          Devnet demo: the plan unlocks at {funding.minStakeSol} zeroSOL so anyone can try it. At today&apos;s yield, fully funding{' '}
-          {config.plan.name} takes about {funding.fullStakeSol.toFixed(1)} SOL. Devnet SOL has no monetary value.
+          {config.cluster === 'devnet' ? 'Devnet' : 'Localnet'} demo: the plan unlocks at {funding.minStakeSol} zeroSOL so anyone can try it. At today&apos;s yield, fully funding{' '}
+          {config.plan.name} takes about {funding.fullStakeSol.toFixed(1)} SOL. Test SOL has no monetary value.
         </Notice>
       ) : null}
 
@@ -190,7 +190,7 @@ function PlanCard(props: {
           {sol(props.stakeLamports)} of {sol(min)} zeroSOL. Stake {sol(Math.max(0, min - props.stakeLamports))} more SOL to unlock.
         </Text>
       </View>
-      <Button title="Stake SOL" kind="secondary" onPress={() => props.onGo('/(tabs)/stake')} />
+      {props.stakeLamports > 0 ? <Button title="Stake SOL" kind="secondary" onPress={() => props.onGo('/(tabs)/stake')} /> : null}
     </Card>
   )
 }
