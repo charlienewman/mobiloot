@@ -5,7 +5,10 @@
   "scripts": {
     "setup": "tsx src/setup-pool.ts",
     "crank": "tsx src/crank.ts",
-    "status": "tsx src/status.ts"
+    "status": "tsx src/status.ts",
+    "setup:program": "tsx src/setup-program.ts"
   },
-  "dependencies": { "@zero/shared": "*" }
+  "dependencies": {
+    "@zero/shared": "*"
+  }
 }

@@ -429,3 +429,14 @@ export function lamportsToPoolTokens(pool: StakePoolState, lamports: bigint): bi
   if (pool.totalLamports === 0n) return lamports
   return (lamports * pool.poolTokenSupply) / pool.totalLamports
 }
+
+/**
+ * Update instructions to prepend to a user transaction when the pool has not yet been
+ * updated this epoch (deposits and withdrawals are rejected until it has). This keeps
+ * the app working even if nobody else has cranked the pool.
+ */
+export async function refreshIxs(connection: Connection, pool: StakePoolState): Promise<TransactionInstruction[]> {
+  const { epoch } = await connection.getEpochInfo()
+  if (pool.lastUpdateEpoch >= BigInt(epoch)) return []
+  return updateIxs(pool, await fetchValidatorList(connection, pool))
+}

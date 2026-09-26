@@ -14,7 +14,8 @@
     "pool:status": "npm -w ops run status",
     "api": "npm -w api run dev",
     "test": "npm -w shared test && npm -w api test",
-    "typecheck": "tsc -p shared && tsc -p ops && tsc -p api"
+    "typecheck": "tsc -p shared && tsc -p ops && tsc -p api",
+    "program:build": "cd anchor && anchor build && cp target/idl/zero_mobile.json idl/"
   },
   "engines": {
     "node": ">=22"

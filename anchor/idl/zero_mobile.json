@@ -1,0 +1,540 @@
+{
+  "address": "ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp",
+  "metadata": {
+    "name": "zero_mobile",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "activate",
+      "docs": [
+        "Activates the plan for `period`, which must be the current billing period."
+      ],
+      "discriminator": [
+        194,
+        203,
+        35,
+        100,
+        151,
+        55,
+        170,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stake_pool"
+        },
+        {
+          "name": "holder_tokens"
+        },
+        {
+          "name": "entitlement",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  108,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "period"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "period",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "close_entitlement",
+      "docs": [
+        "Returns the entitlement's rent to its owner once its period has ended."
+      ],
+      "discriminator": [
+        130,
+        109,
+        177,
+        37,
+        184,
+        82,
+        11,
+        235
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "entitlement"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "entitlement",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stake_pool",
+          "docs": [
+            "as the trusted stake pool program."
+          ]
+        },
+        {
+          "name": "program",
+          "docs": [
+            "Only the program's upgrade authority may create the config."
+          ],
+          "address": "ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ConfigParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_config",
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ConfigParams"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Entitlement",
+      "discriminator": [
+        220,
+        250,
+        27,
+        244,
+        55,
+        49,
+        74,
+        154
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "EntitlementActivated",
+      "discriminator": [
+        58,
+        11,
+        158,
+        118,
+        0,
+        39,
+        12,
+        216
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not the program upgrade authority"
+    },
+    {
+      "code": 6001,
+      "name": "Paused",
+      "msg": "Activations are paused"
+    },
+    {
+      "code": 6002,
+      "name": "WrongPeriod",
+      "msg": "Period is not the current billing period"
+    },
+    {
+      "code": 6003,
+      "name": "WrongStakePool",
+      "msg": "Account is not the configured stake pool"
+    },
+    {
+      "code": 6004,
+      "name": "WrongMint",
+      "msg": "Token account is not zeroSOL"
+    },
+    {
+      "code": 6005,
+      "name": "WrongOwner",
+      "msg": "Token account does not belong to the signer"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientStake",
+      "msg": "Not enough zeroSOL to fund this plan"
+    },
+    {
+      "code": 6007,
+      "name": "PeriodNotOver",
+      "msg": "The entitlement's period has not ended"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidConfig",
+      "msg": "Invalid configuration"
+    },
+    {
+      "code": 6009,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    }
+  ],
+  "types": [
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_pool_program",
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "plan_code",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "min_stake_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "period_seconds",
+            "type": "u32"
+          },
+          {
+            "name": "period_origin",
+            "type": "i64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan_code",
+            "docs": [
+              "Short public plan identifier, e.g. b\"zero-essentials\\0\"."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "min_stake_lamports",
+            "docs": [
+              "SOL value of zeroSOL a wallet must hold to activate a period."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "period_seconds",
+            "docs": [
+              "Length of one billing period."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "period_origin",
+            "docs": [
+              "Unix timestamp at which period 0 starts."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Entitlement",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "period",
+            "type": "u64"
+          },
+          {
+            "name": "plan_code",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "pool_tokens",
+            "docs": [
+              "zeroSOL held at activation."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "stake_lamports",
+            "docs": [
+              "SOL value of that zeroSOL at activation."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "activated_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EntitlementActivated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "period",
+            "type": "u64"
+          },
+          {
+            "name": "plan_code",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "stake_lamports",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
