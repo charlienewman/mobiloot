@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { beforeEach, describe, test } from 'node:test'
 import { Keypair, PublicKey } from '@solana/web3.js'
-import bs58 from 'bs58'
 import nacl from 'tweetnacl'
 import type { Entitlement, ZeroConfig } from '@zero/shared'
 import { buildApp, type Deps } from '../src/app'
+import { formatSiwsMessage } from '../src/auth'
 import { openDb } from '../src/db'
 import { MockProvider } from '../src/provider/mock'
 
@@ -62,14 +62,24 @@ function setup() {
   return { app, deps, entitle, holdings, calls: () => providerCalls }
 }
 
-async function signIn(app: ReturnType<typeof buildApp>, kp: Keypair) {
+const b64 = (b: Uint8Array) => Buffer.from(b).toString('base64')
+
+/** Does what a wallet does with the challenge: format the SIWS message and sign it. */
+async function signIn(app: ReturnType<typeof buildApp>, kp: Keypair, overrides: Record<string, string> = {}) {
   const address = kp.publicKey.toBase58()
-  const ch = await app.inject({ method: 'POST', url: '/v1/auth/challenge', payload: { address } })
+  const ch = await app.inject({ method: 'POST', url: '/v1/auth/challenge' })
   assert.equal(ch.statusCode, 200)
-  const { nonce, message } = ch.json()
-  const signature = bs58.encode(nacl.sign.detached(Buffer.from(message), kp.secretKey))
-  return { nonce, message, signature, address }
+  const input = { ...ch.json(), ...overrides }
+  const message = formatSiwsMessage({ ...input, address })
+  return {
+    nonce: input.nonce as string,
+    message,
+    address,
+    signedMessage: b64(Buffer.from(message)),
+    signature: b64(nacl.sign.detached(Buffer.from(message), kp.secretKey)),
+  }
 }
+const verifyBody = (s: Awaited<ReturnType<typeof signIn>>) => ({ address: s.address, signedMessage: s.signedMessage, signature: s.signature })
 
 describe('auth', () => {
   let ctx: ReturnType<typeof setup>
@@ -79,8 +89,9 @@ describe('auth', () => {
     const kp = Keypair.generate()
     const s = await signIn(ctx.app, kp)
     assert.match(s.message, /^zero\.test wants you to sign in/)
+    assert.match(s.message, /Chain ID: solana:localnet/)
     assert.match(s.message, new RegExp(`Nonce: ${s.nonce}`))
-    const res = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: s })
+    const res = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })
     assert.equal(res.statusCode, 200)
     const me = await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: { authorization: `Bearer ${res.json().token}` } })
     assert.equal(me.statusCode, 200)
@@ -89,8 +100,8 @@ describe('auth', () => {
 
   test('rejects a replayed challenge', async () => {
     const s = await signIn(ctx.app, Keypair.generate())
-    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: s })).statusCode, 200)
-    const replay = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: s })
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).statusCode, 200)
+    const replay = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })
     assert.equal(replay.statusCode, 401)
     assert.equal(replay.json().error, 'Challenge already used')
   })
@@ -99,17 +110,32 @@ describe('auth', () => {
     const victim = Keypair.generate()
     const attacker = Keypair.generate()
     const s = await signIn(ctx.app, victim)
-    const forged = bs58.encode(nacl.sign.detached(Buffer.from(s.message), attacker.secretKey))
-    const r1 = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: { ...s, signature: forged } })
+    const forged = b64(nacl.sign.detached(Buffer.from(s.message), attacker.secretKey))
+    const r1 = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: { ...verifyBody(s), signature: forged } })
     assert.equal(r1.json().error, 'Invalid signature')
-    const r2 = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: { ...s, address: attacker.publicKey.toBase58() } })
-    assert.equal(r2.json().error, 'Unknown challenge')
+    // Attacker signs the victim's message text with their own key: address line mismatch.
+    const r2 = await ctx.app.inject({
+      method: 'POST',
+      url: '/v1/auth/verify',
+      payload: { address: attacker.publicKey.toBase58(), signedMessage: s.signedMessage, signature: forged },
+    })
+    assert.equal(r2.json().error, 'Address mismatch')
+  })
+
+  test('rejects messages for another domain, chain or an unissued nonce', async () => {
+    const kp = Keypair.generate()
+    const wrongDomain = await signIn(ctx.app, kp, { domain: 'evil.test' })
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(wrongDomain) })).json().error, 'Wrong domain')
+    const wrongChain = await signIn(ctx.app, kp, { chainId: 'solana:mainnet' })
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(wrongChain) })).json().error, 'Wrong chain')
+    const madeUp = await signIn(ctx.app, kp, { nonce: 'f'.repeat(32) })
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(madeUp) })).json().error, 'Unknown challenge')
   })
 
   test('rejects expired challenges', async () => {
     const s = await signIn(ctx.app, Keypair.generate())
     ctx.deps.db.prepare('UPDATE challenges SET expires_at = 0').run()
-    const res = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: s })
+    const res = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })
     assert.equal(res.json().error, 'Challenge expired')
   })
 
@@ -127,7 +153,7 @@ describe('eSIM provisioning', () => {
     ctx = setup()
     kp = Keypair.generate()
     const s = await signIn(ctx.app, kp)
-    const token = (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: s })).json().token
+    const token = (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).json().token
     auth = { authorization: `Bearer ${token}` }
   })
 

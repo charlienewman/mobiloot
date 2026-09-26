@@ -4,7 +4,7 @@ import { PublicKey } from '@solana/web3.js'
 import Fastify, { type FastifyRequest } from 'fastify'
 import { periodBounds, type Entitlement, type ZeroConfig } from '@zero/shared'
 import { z } from 'zod'
-import { AuthError, createChallenge, revokeSession, sessionAddress, verifyChallenge } from './auth'
+import { AuthError, createChallenge, revokeSession, sessionAddress, verifySignIn } from './auth'
 import type { Db, OrderRow } from './db'
 import { planByCode, PLANS } from './plans'
 import type { MobileProvider } from './provider'
@@ -76,18 +76,12 @@ export function buildApp(deps: Deps) {
 
   app.get('/v1/pool', async () => deps.poolStats())
 
-  app.post('/v1/auth/challenge', async (req) => {
-    const { address } = z.object({ address: z.string().min(32).max(44) }).parse(req.body)
-    try {
-      return createChallenge(db, address, deps.signInDomain, `solana:${deps.cluster.cluster}`)
-    } catch {
-      throw new HttpError(400, 'Invalid address')
-    }
-  })
+  /** Fields for a Sign In With Solana request; the wallet formats and signs the message. */
+  app.post('/v1/auth/challenge', async () => createChallenge(db, deps.signInDomain, `solana:${deps.cluster.cluster}`))
 
   app.post('/v1/auth/verify', async (req) => {
-    const body = z.object({ address: z.string(), nonce: z.string(), signature: z.string() }).parse(req.body)
-    return verifyChallenge(db, body.nonce, body.address, body.signature)
+    const body = z.object({ address: z.string(), signedMessage: z.string(), signature: z.string() }).parse(req.body)
+    return verifySignIn(db, body, deps.signInDomain)
   })
 
   app.post('/v1/auth/logout', async (req) => {
