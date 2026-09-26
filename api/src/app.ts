@@ -6,6 +6,7 @@ import Fastify, { type FastifyRequest } from 'fastify'
 import { periodBounds, type Entitlement, type ZeroConfig } from '@zero/shared'
 import { z } from 'zod'
 import { AuthError, createChallenge, revokeSession, sessionAddress, verifySignIn } from './auth'
+import { createCoverage } from './coverage'
 import type { Db, OrderRow } from './db'
 import { planByCode, PLANS } from './plans'
 import type { MobileProvider } from './provider'
@@ -25,6 +26,7 @@ export interface Deps {
     zeroProgram?: string
   }
   signInDomain: string
+  trustProxy?: boolean
   fetchZeroConfig(): Promise<ZeroConfig>
   currentPeriod(config: ZeroConfig): Promise<bigint>
   fetchEntitlement(owner: PublicKey, period: bigint): Promise<Entitlement | undefined>
@@ -35,6 +37,7 @@ export interface Deps {
 
 export function buildApp(deps: Deps) {
   const { db, provider } = deps
+  const coverage = createCoverage(deps)
   const app = Fastify({
     logger: {
       level: process.env.LOG_LEVEL ?? 'info',
@@ -42,6 +45,7 @@ export function buildApp(deps: Deps) {
       redact: ['req.headers.authorization', '*.activationCode', 'activationCode', 'res.body'],
     },
     genReqId: () => crypto.randomUUID(),
+    trustProxy: deps.trustProxy ?? false,
   })
   void app.register(cors, { origin: true })
   // Per-IP limits; sign-in and provisioning get tighter ones below.
@@ -136,7 +140,8 @@ export function buildApp(deps: Deps) {
         deps.fetchEntitlement(owner, period),
         deps.fetchHoldings(owner),
       ])
-      const order = findOrder(owner.toBase58(), period)
+      const found = findOrder(owner.toBase58(), period)
+      const order = found && (await coverage.apply(found, holdings.stakeLamports, config.minStakeLamports))
       return {
         address: owner.toBase58(),
         period: period.toString(),
@@ -172,7 +177,8 @@ export function buildApp(deps: Deps) {
 
       const address = owner.toBase58()
       const existing = findOrder(address, period)
-      if (existing?.status === 'ready') return publicOrder(existing)
+      if (existing?.status === 'ready')
+        return publicOrder(await coverage.apply(existing, holdings.stakeLamports, config.minStakeLamports))
 
       const now = Date.now()
       const id = existing?.id ?? crypto.randomUUID()
@@ -222,7 +228,7 @@ export function buildApp(deps: Deps) {
     app.post('/v1/esim/reveal', strict, async (req) => {
       const owner = requireWallet(req)
       const config = await deps.fetchZeroConfig()
-      const order = findOrder(owner.toBase58(), await deps.currentPeriod(config))
+      const order = await coveredOrder(owner, config)
       if (!order?.activation_code) throw new HttpError(404, 'No eSIM ready yet')
       return {
         activationCode: order.activation_code,
@@ -233,12 +239,22 @@ export function buildApp(deps: Deps) {
     app.get('/v1/usage', async (req) => {
       const owner = requireWallet(req)
       const config = await deps.fetchZeroConfig()
-      const order = findOrder(owner.toBase58(), await deps.currentPeriod(config))
+      const order = await coveredOrder(owner, config)
       if (!order?.provider_order_id || order.status !== 'ready') throw new HttpError(404, 'No active eSIM')
       const plan = planByCode(order.plan_code) ?? PLANS[0]
       return provider.getUsage(order.provider_order_id, plan.dataGb * 1024)
     })
   })
+
+  /** The caller's current order after re-checking coverage; refuses suspended lines. */
+  async function coveredOrder(owner: PublicKey, config: ZeroConfig) {
+    const order = findOrder(owner.toBase58(), await deps.currentPeriod(config))
+    if (!order) return undefined
+    const { stakeLamports } = await deps.fetchHoldings(owner)
+    const checked = await coverage.apply(order, stakeLamports, config.minStakeLamports)
+    if (checked.suspended_at) throw new HttpError(403, 'Line suspended: your zeroSOL no longer covers the plan.')
+    return checked
+  }
 
   function findOrder(address: string, period: bigint): OrderRow | undefined {
     return db
@@ -257,6 +273,7 @@ function publicOrder(o: OrderRow) {
     planCode: o.plan_code,
     iccidLast4: o.iccid?.slice(-4) ?? null,
     hasActivationCode: Boolean(o.activation_code),
+    suspended: Boolean(o.suspended_at),
     error: o.error,
     createdAt: o.created_at,
   }

@@ -9,6 +9,8 @@ const sharedDir = path.resolve(projectRoot, '../shared')
 const config = getDefaultConfig(projectRoot)
 
 config.watchFolders = [sharedDir]
+// Native build output inside node_modules churns during Gradle builds and crashes the watcher.
+config.resolver.blockList = [/\/android\/(\.cxx|build)\/.*/, /\/\.gradle\/.*/]
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   // tsconfig maps `buffer` to Node's types for type-checking only; bundle the npm package.
   if (moduleName === 'buffer') {

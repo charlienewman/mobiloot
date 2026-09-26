@@ -1,5 +1,4 @@
 // Sign In With Solana (SIWS). The server issues a single-use, expiring nonce and the
-import fs from 'node:fs'
 // fields of the message; the wallet formats and signs it during the Mobile Wallet
 // Adapter `authorize` call, so connecting and signing in is one wallet handoff. The
 // server verifies the ed25519 signature over the exact signed bytes, then checks that
@@ -37,6 +36,7 @@ export function createChallenge(db: Db, domain: string, chainId: string, now = D
     issuedAt: new Date(now).toISOString(),
     expirationTime: new Date(now + CHALLENGE_TTL_MS).toISOString(),
   }
+  db.prepare('DELETE FROM challenges WHERE expires_at < ?').run(now - 3600_000)
   db.prepare('INSERT INTO challenges (nonce, address, message, expires_at) VALUES (?, ?, ?, ?)').run(
     input.nonce,
     '',
@@ -77,10 +77,6 @@ export function verifySignIn(
     signature = decodeBytes(args.signature)
     if (signature.length !== 64) throw new Error()
   } catch {
-    fs.writeFileSync(
-      '/tmp/claude-1000/-home-charlie-Documents-Web-clockin/b45bc483-1e93-40fc-884a-2efa1fa2f627/scratchpad/siws.json',
-      JSON.stringify(args),
-    )
     throw new AuthError('Malformed sign-in')
   }
   if (!nacl.sign.detached.verify(message, signature, address.toBytes())) throw new AuthError('Invalid signature')
@@ -98,7 +94,8 @@ export function verifySignIn(
   if (!row) throw new AuthError('Unknown challenge')
   if (row.expires_at < now) throw new AuthError('Challenge expired')
   const issued = JSON.parse(row.message) as SiwsInput
-  if (field('Chain ID') && field('Chain ID') !== issued.chainId) throw new AuthError('Wrong chain')
+  if (field('Chain ID') !== issued.chainId) throw new AuthError('Wrong chain')
+  if (field('URI') !== issued.uri) throw new AuthError('Wrong URI')
 
   // Consume atomically so a replayed signature cannot mint a second session.
   const consumed = db

@@ -17,11 +17,12 @@ Test clusters only; no mainnet funds are involved.
 | **Custody.** Zero steals or freezes deposits. | Deposits go to a widely used, unmodified SPL stake pool program (Sanctum's deployment of the SPL codebase), not a custom vault. zeroSOL sits in the user's wallet. The pool manager can change fees and validators but cannot move user funds. Withdrawal fees are 0. |
 | **Fee change rug.** Manager raises fees. | Epoch and withdrawal fee changes only take effect after an epoch delay in the stake pool program, which gives holders time to exit. Deposit fee changes are immediate but only affect new deposits. Production should put the manager key behind a multisig. |
 | **Fake entitlement.** A user gets service without holding zeroSOL. | The program checks the token account's mint and owner, and values it at the pool's live exchange rate read from the pool account, which is pinned to the configured address and owner program. |
-| **Flash stake.** A user borrows zeroSOL, activates, then returns it. | Activation proves holdings at one instant. The API re-checks holdings before provisioning, and each period needs a new activation, so the exposure is at most one period of service. Production mitigations: time-weighted checks, or activating at period end (pay in arrears). |
+| **Stake relay.** A wallet activates and provisions, then passes its zeroSOL to another wallet to do the same (or borrows it briefly). | Holdings are enforced continuously, not just at activation. Every `/v1/me`, `/reveal` and `/usage` call re-checks the wallet's zeroSOL (across all its token accounts), and a background sweep re-checks every active line each minute. A line whose wallet drops below the threshold is suspended (`provider.suspend`) and resumes when it is covered again, so one stake backs at most one active line at a time. Residual risk: the window between sweeps (up to a minute) and provider suspension latency. Each period also needs a new on-chain activation. |
 | **Double activation** in one period. | The entitlement PDA is seeded by `(owner, period)`, so a second `init` fails. |
+| **Stale exchange rate.** Valuing zeroSOL from a pool not yet updated this epoch. | `activate` requires the pool's `last_update_epoch` to equal the current epoch. The app prepends the permissionless update instructions. |
 | **Wrong period.** Pre-activating future periods while funded. | `period` must equal the period computed from the on-chain clock. |
 | **Config takeover.** Someone front-runs `initialize`. | `initialize` requires the signer to be the program's upgrade authority (checked through ProgramData). |
-| **Session replay.** Reusing a signed sign-in message. | Nonces are single-use and consumed atomically, expire after 5 minutes, and the message is bound to the API's domain and chain. The signature is verified over the exact signed bytes. |
+| **Session replay.** Reusing a signed sign-in message. | Nonces are single-use and consumed atomically and expire after 5 minutes. The signed message must carry the API's domain, URI and chain ID. The signature is verified over the exact signed bytes. |
 | **Brute force / abuse.** | Per-IP rate limits: 240 req/min overall, 20/min on sign-in, provisioning and code reveal. |
 | **Session theft.** | Tokens are random 256-bit values stored hashed on the server, and in the OS keystore via `expo-secure-store` on the device. 7-day expiry, revoked on logout. |
 | **Double provisioning.** | `UNIQUE(address, period, provider_mode)` in the database plus provider-side idempotency keys. Concurrent requests share one order (tested). |
@@ -32,6 +33,8 @@ Test clusters only; no mainnet funds are involved.
 ## Known limitations (demo)
 
 - The admin and pool manager are single keys.
-- The API is a single process with SQLite.
+- The API is a single process with SQLite. Set `TRUST_PROXY=true` behind a reverse proxy so rate limits see real client IPs.
+- The mock provider keeps its orders in memory; a real provider must be idempotent on its side.
+- The admin can change `period_origin`/`period_seconds`, which re-maps period IDs. Treat these as fixed after launch.
 - The Shaka sandbox adapter is not wired yet (see `shaka-sandbox.md`).
 - Localnet yield does not annualise meaningfully, so a reference APY is shown there.

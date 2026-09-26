@@ -27,6 +27,7 @@ export const ZERO_ERRORS: Record<number, string> = {
   6007: 'This billing period has not ended yet',
   6008: 'Invalid configuration',
   6009: 'Arithmetic overflow',
+  6010: 'The stake pool needs its epoch update first. Try again.',
 }
 
 export interface ConfigParams {

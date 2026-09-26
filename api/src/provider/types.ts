@@ -27,4 +27,7 @@ export interface MobileProvider {
   createOrder(input: CreateOrderInput): Promise<ProviderOrder>
   getOrder(providerOrderId: string): Promise<ProviderOrder>
   getUsage(providerOrderId: string, dataTotalMb: number): Promise<Usage>
+  /** Bars the line (e.g. HLR/PCRF block) while the wallet no longer covers the plan. */
+  suspend?(providerOrderId: string): Promise<void>
+  resume?(providerOrderId: string): Promise<void>
 }

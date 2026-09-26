@@ -34,11 +34,16 @@ export function openDb(file: string): Db {
       iccid TEXT,
       activation_code TEXT,
       error TEXT,
+      suspended_at INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       UNIQUE (address, period, provider_mode)
     );
   `)
+  // Databases created before coverage enforcement lack the column.
+  try {
+    db.exec('ALTER TABLE orders ADD COLUMN suspended_at INTEGER')
+  } catch {}
   return db
 }
 
@@ -54,6 +59,7 @@ export interface OrderRow {
   iccid: string | null
   activation_code: string | null
   error: string | null
+  suspended_at: number | null
   created_at: number
   updated_at: number
 }

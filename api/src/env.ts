@@ -10,6 +10,8 @@ const Env = z.object({
   CLUSTER: z.enum(['localnet', 'devnet']).default('localnet'),
   PORT: z.coerce.number().default(8787),
   HOST: z.string().default('0.0.0.0'),
+  /** Set when running behind a reverse proxy so rate limits see real client IPs. */
+  TRUST_PROXY: z.coerce.boolean().default(false),
   RPC_URL: z.string().optional(),
   /** Domain the sign-in message is bound to. */
   SIGN_IN_DOMAIN: z.string().default('zero.shaka.tel'),

@@ -111,6 +111,8 @@ export function useTransactions() {
       run('activate', async (owner) => {
         const pool = await fetchStakePool(connection, stakePool)
         return [
+          // The program values zeroSOL at the pool's rate, which must be current.
+          ...(await refreshIxs(connection, pool)),
           activateIx({
             owner,
             stakePool,

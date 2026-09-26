@@ -119,7 +119,7 @@ export default function Stake() {
 
       {mode === 'withdraw' && active && afterLamports < min && lamports > 0 ? (
         <Notice tone="warn">
-          Your plan stays active until this period ends, but it won&apos;t renew below {sol(min)} zeroSOL.
+          Below {sol(min)} zeroSOL your line pauses until you stake back up, and the plan won&apos;t renew.
         </Notice>
       ) : null}
       {reserveShort && lamports > 0 ? (

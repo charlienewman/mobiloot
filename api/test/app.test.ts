@@ -5,6 +5,7 @@ import nacl from 'tweetnacl'
 import type { Entitlement, ZeroConfig } from '@zero/shared'
 import { buildApp, type Deps } from '../src/app'
 import { formatSiwsMessage } from '../src/auth'
+import { createCoverage } from '../src/coverage'
 import { openDb } from '../src/db'
 import { MockProvider } from '../src/provider/mock'
 
@@ -246,6 +247,33 @@ describe('eSIM provisioning', () => {
     const usage = (await ctx.app.inject({ method: 'GET', url: '/v1/usage', headers: auth })).json()
     assert.equal(usage.dataTotalMb, 10 * 1024)
     assert.ok(usage.dataUsedMb >= 0 && usage.dataUsedMb <= usage.dataTotalMb)
+  })
+
+  test('a line is suspended while its wallet stops covering the plan, and resumes after', async () => {
+    // The relay attack: activate and provision, then hand the zeroSOL to another wallet.
+    ctx.entitle(kp)
+    await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })
+    ctx.holdings.set(kp.publicKey.toBase58(), 0n)
+
+    const me = (await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: auth })).json()
+    assert.equal(me.esim.suspended, true)
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/esim/reveal', headers: auth })).statusCode, 403)
+    assert.equal((await ctx.app.inject({ method: 'GET', url: '/v1/usage', headers: auth })).statusCode, 403)
+    assert.ok((ctx.deps.provider as MockProvider).suspended.size === 1)
+
+    ctx.holdings.set(kp.publicKey.toBase58(), MIN)
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/esim/reveal', headers: auth })).statusCode, 200)
+    assert.equal((ctx.deps.provider as MockProvider).suspended.size, 0)
+  })
+
+  test('the background sweep suspends lines without any request from the user', async () => {
+    ctx.entitle(kp)
+    await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })
+    ctx.holdings.set(kp.publicKey.toBase58(), MIN - 1n)
+    const result = await createCoverage(ctx.deps).sweep(1n, MIN)
+    assert.deepEqual(result, { checked: 1, changed: 1 })
+    const row = ctx.deps.db.prepare('SELECT suspended_at FROM orders').get() as { suspended_at: number | null }
+    assert.ok(row.suspended_at)
   })
 
   test('a provider outage leaves the order retryable', async () => {

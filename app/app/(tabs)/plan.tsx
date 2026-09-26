@@ -182,7 +182,7 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
 function EsimReady({ order }: { order: EsimOrder }) {
   const { config } = useZero()
   const { token } = useSession()
-  const usage = useUsage(true)
+  const usage = useUsage(!order.suspended)
   const [revealed, setRevealed] = useState<RevealedEsim | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
   const pop = useRef(new Animated.Value(0.9)).current
@@ -239,10 +239,16 @@ function EsimReady({ order }: { order: EsimOrder }) {
         </View>
       </Animated.View>
 
-      <Card>
+      {order.suspended ? (
+        <Notice tone="danger">
+          Line suspended: your wallet no longer holds enough zeroSOL to cover the plan. Stake back up and it resumes
+          automatically.
+        </Notice>
+      ) : null}
+      <Card style={order.suspended ? { opacity: 0.5 } : undefined}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Text variant="heading">Install your eSIM</Text>
-          <Chip label="Ready" tone="lime" />
+          <Chip label={order.suspended ? 'Suspended' : 'Ready'} tone={order.suspended ? 'danger' : 'lime'} />
         </Row>
         <Stack gap={space.sm}>
           <Text color={colors.textMuted}>1. Open SIM settings and choose Add eSIM (or Download a SIM).</Text>
@@ -277,6 +283,7 @@ function EsimReady({ order }: { order: EsimOrder }) {
           <Button
             title="Show activation code"
             kind="secondary"
+            disabled={order.suspended}
             loading={reveal.isPending}
             onPress={() => reveal.mutate()}
             icon={<Feather name="eye" size={18} color={colors.text} />}
@@ -291,7 +298,9 @@ function EsimReady({ order }: { order: EsimOrder }) {
 
       <Card>
         <Text variant="heading">This period</Text>
-        {usage.data ? (
+        {order.suspended ? (
+          <Text color={colors.textMuted}>Usage is paused while the line is suspended.</Text>
+        ) : usage.data ? (
           <Stack gap={space.md}>
             <Stack gap={6}>
               <Row style={{ justifyContent: 'space-between' }}>

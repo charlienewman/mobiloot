@@ -21,7 +21,8 @@ mod stake_pool_layout {
     pub const POOL_MINT: usize = 162;
     pub const TOTAL_LAMPORTS: usize = 258;
     pub const POOL_TOKEN_SUPPLY: usize = 266;
-    pub const MIN_LEN: usize = 274;
+    pub const LAST_UPDATE_EPOCH: usize = 274;
+    pub const MIN_LEN: usize = 282;
     pub const ACCOUNT_TYPE_STAKE_POOL: u8 = 1;
 }
 
@@ -56,6 +57,8 @@ pub mod zero_mobile {
 
         let pool = read_pool(&ctx.accounts.stake_pool)?;
         require_keys_eq!(pool.mint, config.pool_mint, ZeroError::WrongStakePool);
+        // A pool not yet updated this epoch has a stale exchange rate.
+        require_eq!(pool.last_update_epoch, Clock::get()?.epoch, ZeroError::StalePool);
         let pool_tokens = ctx.accounts.holder_tokens.amount;
         let stake_lamports = pool.lamports_for(pool_tokens)?;
         require!(stake_lamports >= config.min_stake_lamports, ZeroError::InsufficientStake);
@@ -167,6 +170,7 @@ struct PoolView {
     mint: Pubkey,
     total_lamports: u64,
     pool_token_supply: u64,
+    last_update_epoch: u64,
 }
 
 impl PoolView {
@@ -194,6 +198,7 @@ fn read_pool(info: &AccountInfo) -> Result<PoolView> {
         mint: Pubkey::try_from(&data[POOL_MINT..POOL_MINT + 32]).unwrap(),
         total_lamports: u64_at(TOTAL_LAMPORTS),
         pool_token_supply: u64_at(POOL_TOKEN_SUPPLY),
+        last_update_epoch: u64_at(LAST_UPDATE_EPOCH),
     })
 }
 
@@ -279,4 +284,6 @@ pub enum ZeroError {
     InvalidConfig,
     #[msg("Arithmetic overflow")]
     MathOverflow,
+    #[msg("The stake pool has not been updated this epoch")]
+    StalePool,
 }

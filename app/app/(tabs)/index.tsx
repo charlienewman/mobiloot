@@ -35,6 +35,7 @@ export default function Home() {
   const unlocked = stakeLamports >= Number(config.minStakeLamports)
   const active = Boolean(me.data?.entitlement)
   const esimReady = me.data?.esim?.status === 'ready'
+  const suspended = Boolean(me.data?.esim?.suspended)
   const usage = useUsage(esimReady)
   const renewsIn = daysUntil(config.period.end)
 
@@ -83,6 +84,7 @@ export default function Home() {
       <PlanCard
         active={active}
         esimReady={esimReady}
+        suspended={suspended}
         unlocked={unlocked}
         stakeLamports={stakeLamports}
         renewsIn={renewsIn}
@@ -135,6 +137,7 @@ export default function Home() {
 function PlanCard(props: {
   active: boolean
   esimReady: boolean
+  suspended: boolean
   unlocked: boolean
   stakeLamports: number
   renewsIn: number
@@ -143,6 +146,22 @@ function PlanCard(props: {
 }) {
   const { config } = useZero()
   const min = Number(config.minStakeLamports)
+
+  if (props.active && props.esimReady && props.suspended) {
+    return (
+      <Card>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Text variant="heading">{config.plan.name}</Text>
+          <Chip label="Suspended" tone="danger" />
+        </Row>
+        <Text color={colors.textMuted}>
+          Your line is paused because your wallet holds less than {sol(min)} zeroSOL. Stake back up and it resumes
+          automatically.
+        </Text>
+        <Button title="Stake SOL" onPress={() => props.onGo('/(tabs)/stake')} />
+      </Card>
+    )
+  }
 
   if (props.active && props.esimReady) {
     const u = props.usage

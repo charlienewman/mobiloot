@@ -78,6 +78,8 @@ export interface EsimOrder {
   planCode: string
   iccidLast4: string | null
   hasActivationCode: boolean
+  /** Barred because the wallet's zeroSOL no longer covers the plan. */
+  suspended: boolean
   error: string | null
   createdAt: number
 }

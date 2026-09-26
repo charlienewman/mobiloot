@@ -87,6 +87,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     const p = period()
     await send(
       user,
+      ...(await refreshIxs(connection, pool)),
       activateIx({
         owner: user.publicKey,
         stakePool: pool.address,
@@ -105,6 +106,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     await assert.rejects(
       send(
         user,
+        ...(await refreshIxs(connection, pool)),
         activateIx({
           owner: user.publicKey,
           stakePool: pool.address,
@@ -128,6 +130,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     await assert.rejects(
       send(
         user,
+        ...(await refreshIxs(connection, pool)),
         activateIx({
           owner: user.publicKey,
           stakePool: pool.address,
@@ -147,6 +150,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     await assert.rejects(
       send(
         user,
+        ...(await refreshIxs(connection, pool)),
         activateIx({
           owner: user.publicKey,
           stakePool: pool.address,
@@ -160,6 +164,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     await assert.rejects(
       send(
         whale,
+        ...(await refreshIxs(connection, pool)),
         activateIx({
           owner: whale.publicKey,
           stakePool: pool.address,

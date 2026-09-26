@@ -34,6 +34,14 @@ export class MockProvider implements MobileProvider {
     return found.order
   }
 
+  readonly suspended = new Set<string>()
+  async suspend(providerOrderId: string) {
+    this.suspended.add(providerOrderId)
+  }
+  async resume(providerOrderId: string) {
+    this.suspended.delete(providerOrderId)
+  }
+
   async getUsage(providerOrderId: string, dataTotalMb: number): Promise<Usage> {
     // Usage grows smoothly from the order's creation so the Home screen moves over time.
     const createdAt = this.orders.get(providerOrderId)?.createdAt ?? Date.now()

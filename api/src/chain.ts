@@ -1,7 +1,6 @@
 import { Connection, PublicKey } from '@solana/web3.js'
 import { Buffer } from 'buffer'
 import {
-  associatedTokenAddress,
   configAddress,
   decodeConfig,
   decodeEntitlement,
@@ -41,8 +40,8 @@ export async function fetchEntitlement(owner: PublicKey, period: bigint): Promis
 /** zeroSOL held by `owner` and its SOL value at the pool's current rate. */
 export async function fetchHoldings(owner: PublicKey) {
   const pool = await fetchStakePool(connection, stakePoolAddress)
-  const ata = associatedTokenAddress(owner, pool.poolMint)
-  const balance = await connection.getTokenAccountBalance(ata).catch(() => undefined)
-  const poolTokens = BigInt(balance?.value.amount ?? '0')
+  // Every zeroSOL account the wallet owns counts, matching what the program accepts.
+  const { value } = await connection.getParsedTokenAccountsByOwner(owner, { mint: pool.poolMint })
+  const poolTokens = value.reduce((sum, a) => sum + BigInt(a.account.data.parsed.info.tokenAmount.amount), 0n)
   return { pool, poolTokens, stakeLamports: poolTokensToLamports(pool, poolTokens) }
 }
