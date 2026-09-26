@@ -95,7 +95,7 @@ provisioning under concurrency, outage recovery and activation-code masking.
 | [`api/`](api) | Backend: SIWS, entitlement checks, eSIM provisioning, pool stats |
 | [`shared/`](shared) | Stake pool and program clients shared by all of the above |
 | [`ops/`](ops) | Pool setup, epoch crank, rebalance, status |
-| [`docs/`](docs) | [Architecture](docs/architecture.md), [economics](docs/economics.md), [threat model](docs/threat-model.md), [Shaka sandbox](docs/shaka-sandbox.md), [demo script](docs/demo-script.md) |
+| [`docs/`](docs) | [Architecture](docs/architecture.md), [economics](docs/economics.md), [threat model](docs/threat-model.md), [Shaka sandbox](docs/shaka-sandbox.md), [demo script](docs/demo-script.md), [next steps](docs/next-steps.md) |
 
 ## Addresses
 
