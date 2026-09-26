@@ -1,0 +1,8 @@
+{
+  "name": "@zero/shared",
+  "private": true,
+  "type": "module",
+  "main": "index.ts",
+  "scripts": { "test": "node --import tsx --test test/*.test.ts" },
+  "peerDependencies": { "@solana/web3.js": "^1.98.0" }
+}

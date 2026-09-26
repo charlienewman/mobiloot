@@ -1,0 +1,17 @@
+node_modules/
+.localnet/
+keys/
+target/
+.anchor/
+*.keystore
+*.jks
+.env
+.env.local
+api/data/
+app/android/
+app/ios/
+app/.expo/
+*.apk
+*.aab
+.DS_Store
+config/localnet.json

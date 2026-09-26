@@ -1,0 +1,11 @@
+{
+  "name": "@zero/ops",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "tsx src/setup-pool.ts",
+    "crank": "tsx src/crank.ts",
+    "status": "tsx src/status.ts"
+  },
+  "dependencies": { "@zero/shared": "*" }
+}

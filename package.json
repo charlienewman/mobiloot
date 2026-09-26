@@ -1,0 +1,31 @@
+{
+  "name": "zero-mobile",
+  "private": true,
+  "description": "Zero Mobile by Shaka: a mobile plan paid for by your staking yield.",
+  "workspaces": [
+    "shared",
+    "ops",
+    "api"
+  ],
+  "scripts": {
+    "localnet": "./scripts/localnet.sh",
+    "pool:setup": "npm -w ops run setup",
+    "pool:crank": "npm -w ops run crank",
+    "pool:status": "npm -w ops run status",
+    "api": "npm -w api run dev",
+    "test": "npm -w shared test && npm -w api test",
+    "typecheck": "tsc -p shared && tsc -p ops && tsc -p api"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "tsx": "^4.23.15",
+    "typescript": "5.9"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.99.0",
+    "buffer": "^6.0.3"
+  }
+}
