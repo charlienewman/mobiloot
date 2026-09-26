@@ -51,7 +51,12 @@ export default function Home() {
         />
       }
     >
-      <Card style={{ alignItems: 'center', paddingVertical: space.xl }}>
+      {me.isError && !me.data ? (
+        <Notice tone="danger">
+          Couldn&apos;t load your plan: {(me.error as Error).message} Pull down to try again.
+        </Notice>
+      ) : null}
+      <Card style={{ alignItems: 'center', paddingVertical: space.xl, opacity: me.data ? 1 : 0.5 }}>
         <CoverageRing value={funding.fundedRatio}>
           <Text variant="number" accessibilityLabel={`${pct(funding.fundedRatio)} of your plan funded`}>
             {pct(Math.min(funding.fundedRatio, 9.99))}
