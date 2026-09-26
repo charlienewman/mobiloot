@@ -83,8 +83,9 @@ npm test          # client/IDL checks, localnet end-to-end (if running), API
 The localnet suite covers deposits minting zeroSOL 1:1, activation, double
 activation, insufficient stake, someone else's token account, wrong period and
 full-principal withdrawal. The API suite covers SIWS (replay, forged
-signatures, wrong domain or chain, expiry), entitlement gating, idempotent
-provisioning under concurrency, outage recovery and activation-code masking.
+signatures, wrong domain or chain, expiry), rate limiting, entitlement gating,
+idempotent provisioning under concurrency, outage recovery, activation-code
+masking, and suspending a line when its stake is moved away (relay attack).
 
 ## Repository
 
