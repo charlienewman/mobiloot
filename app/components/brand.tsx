@@ -1,4 +1,4 @@
-import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg'
+import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg'
 import { View } from 'react-native'
 import { colors } from '@/constants/theme'
 import { Text } from './ui'
@@ -15,7 +15,8 @@ export function ZeroMark({ size = 40, color = colors.lime }: { size?: number; co
         strokeWidth={10}
         strokeLinejoin="round"
       />
-      <Path d="M28 38 H44 M28 50 H44 M28 62 H44" stroke={color} strokeWidth={6} strokeLinecap="round" opacity={0.9} />
+      <Rect x={23} y={40} width={26} height={30} rx={5} fill={color} />
+      <Path d="M36 40 V52 M23 55 H49 M36 58 V70" stroke={colors.bg} strokeWidth={3} />
     </Svg>
   )
 }

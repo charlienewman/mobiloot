@@ -6,7 +6,8 @@
     "setup": "tsx src/setup-pool.ts",
     "crank": "tsx src/crank.ts",
     "status": "tsx src/status.ts",
-    "setup:program": "tsx src/setup-program.ts"
+    "setup:program": "tsx src/setup-program.ts",
+    "rebalance": "tsx src/rebalance.ts"
   },
   "dependencies": {
     "@zero/shared": "*"
