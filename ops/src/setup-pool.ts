@@ -127,9 +127,11 @@ async function createPool() {
 
   const state = await fetchStakePool(connection, pool)
   try {
-    await send('create zeroSOL token metadata', [
-      createTokenMetadataIx(state, payer.publicKey, 'Zero Staked SOL', 'zeroSOL', METADATA_URI),
-    ], [treasury])
+    await send(
+      'create zeroSOL token metadata',
+      [createTokenMetadataIx(state, payer.publicKey, 'Zero Staked SOL', 'zeroSOL', METADATA_URI)],
+      [treasury],
+    )
   } catch {
     console.warn('! token metadata skipped (metadata program unavailable?)')
   }
@@ -158,17 +160,23 @@ async function attachValidators() {
   state = await fetchStakePool(connection, pool)
   list = await fetchValidatorList(connection, state)
   const reserve = BigInt(await connection.getBalance(state.reserveStake))
-  const buffer = BigInt(Math.round(Number(process.env.RESERVE_BUFFER_SOL ?? (CLUSTER === 'localnet' ? 2 : 0.1)) * LAMPORTS_PER_SOL))
+  const buffer = BigInt(
+    Math.round(Number(process.env.RESERVE_BUFFER_SOL ?? (CLUSTER === 'localnet' ? 2 : 0.1)) * LAMPORTS_PER_SOL),
+  )
   const minDelegation = BigInt((await connection.getStakeMinimumDelegation()).value)
   const perValidator = (reserve - buffer) / BigInt(list.length)
   if (perValidator < minDelegation) {
-    console.log(`• reserve ${sol(reserve)} SOL too small to delegate further (need ${sol(minDelegation)} per validator)`)
+    console.log(
+      `• reserve ${sol(reserve)} SOL too small to delegate further (need ${sol(minDelegation)} per validator)`,
+    )
     return
   }
   for (const v of list) {
-    await send(`delegate ${sol(perValidator)} SOL to ${v.voteAccount.toBase58()}`, [
-      increaseValidatorStakeIx(state, v, perValidator, v.transientSeedSuffix),
-    ], [treasury])
+    await send(
+      `delegate ${sol(perValidator)} SOL to ${v.voteAccount.toBase58()}`,
+      [increaseValidatorStakeIx(state, v, perValidator, v.transientSeedSuffix)],
+      [treasury],
+    )
   }
 }
 

@@ -168,7 +168,12 @@ export function closeEntitlementIx(owner: PublicKey, entitlement: PublicKey, pro
   })
 }
 
-export function initializeConfigIx(admin: PublicKey, stakePool: PublicKey, params: ConfigParams, programId = ZERO_PROGRAM_ID) {
+export function initializeConfigIx(
+  admin: PublicKey,
+  stakePool: PublicKey,
+  params: ConfigParams,
+  programId = ZERO_PROGRAM_ID,
+) {
   const programData = PublicKey.findProgramAddressSync([programId.toBuffer()], BPF_UPGRADEABLE_LOADER)[0]
   return new TransactionInstruction({
     programId,

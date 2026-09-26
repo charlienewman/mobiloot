@@ -4,7 +4,20 @@ import { useRouter } from 'expo-router'
 import { RefreshControl, View } from 'react-native'
 import { CoverageRing } from '@/components/brand'
 import { Header } from '@/components/header'
-import { Button, Card, Chip, Divider, KeyValue, Notice, ProgressBar, Row, Screen, Stack, Stat, Text } from '@/components/ui'
+import {
+  Button,
+  Card,
+  Chip,
+  Divider,
+  KeyValue,
+  Notice,
+  ProgressBar,
+  Row,
+  Screen,
+  Stack,
+  Stat,
+  Text,
+} from '@/components/ui'
 import { colors, space } from '@/constants/theme'
 import { useZero } from '@/features/config'
 import { useFunding, useMe, usePool, useUsage } from '@/features/data'
@@ -54,7 +67,11 @@ export default function Home() {
           <Text color={colors.textMuted}> of the {usd(funding.planCost, 0)}/mo plan</Text>
         </Text>
         {stakeLamports === 0 ? (
-          <Button title="Stake SOL to start" onPress={() => router.push('/(tabs)/stake')} style={{ alignSelf: 'stretch' }} />
+          <Button
+            title="Stake SOL to start"
+            onPress={() => router.push('/(tabs)/stake')}
+            style={{ alignSelf: 'stretch' }}
+          />
         ) : null}
       </Card>
 
@@ -70,8 +87,9 @@ export default function Home() {
 
       {config.cluster !== 'mainnet-beta' ? (
         <Notice tone="warn">
-          {config.cluster === 'devnet' ? 'Devnet' : 'Localnet'} demo: the plan unlocks at {funding.minStakeSol} zeroSOL so anyone can try it. At today&apos;s yield, fully funding{' '}
-          {config.plan.name} takes about {funding.fullStakeSol.toFixed(1)} SOL. Test SOL has no monetary value.
+          {config.cluster === 'devnet' ? 'Devnet' : 'Localnet'} demo: the plan unlocks at {funding.minStakeSol} zeroSOL
+          so anyone can try it. At today&apos;s yield, fully funding {config.plan.name} takes about{' '}
+          {funding.fullStakeSol.toFixed(1)} SOL. Test SOL has no monetary value.
         </Notice>
       ) : null}
 
@@ -90,7 +108,10 @@ export default function Home() {
           />
         </Row>
         <Divider />
-        <KeyValue label="Paid to Shaka for plans so far" value={pool.data ? `${sol(pool.data.treasuryEarnedLamports, 4)} SOL` : '…'} />
+        <KeyValue
+          label="Paid to Shaka for plans so far"
+          value={pool.data ? `${sol(pool.data.treasuryEarnedLamports, 4)} SOL` : '…'}
+        />
         <KeyValue label="1 zeroSOL is worth" value={pool.data ? `${pool.data.exchangeRate.toFixed(4)} SOL` : '…'} />
         <Stack gap={6}>
           <Row style={{ justifyContent: 'space-between' }}>
@@ -173,7 +194,8 @@ function PlanCard(props: {
           <Text variant="heading">Your stake unlocks {config.plan.name}</Text>
         </Row>
         <Text color={colors.textMuted}>
-          {config.plan.dataGb} GB data, {config.plan.minutes} minutes and {config.plan.texts} texts. Activate it for this period.
+          {config.plan.dataGb} GB data, {config.plan.minutes} minutes and {config.plan.texts} texts. Activate it for
+          this period.
         </Text>
         <Button title="Activate plan" onPress={() => props.onGo('/(tabs)/plan')} />
       </Card>
@@ -187,10 +209,13 @@ function PlanCard(props: {
       <View style={{ gap: 6 }}>
         <ProgressBar value={progress} />
         <Text variant="small" color={colors.textMuted}>
-          {sol(props.stakeLamports)} of {sol(min)} zeroSOL. Stake {sol(Math.max(0, min - props.stakeLamports))} more SOL to unlock.
+          {sol(props.stakeLamports)} of {sol(min)} zeroSOL. Stake {sol(Math.max(0, min - props.stakeLamports))} more SOL
+          to unlock.
         </Text>
       </View>
-      {props.stakeLamports > 0 ? <Button title="Stake SOL" kind="secondary" onPress={() => props.onGo('/(tabs)/stake')} /> : null}
+      {props.stakeLamports > 0 ? (
+        <Button title="Stake SOL" kind="secondary" onPress={() => props.onGo('/(tabs)/stake')} />
+      ) : null}
     </Card>
   )
 }

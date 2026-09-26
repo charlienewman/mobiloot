@@ -8,11 +8,12 @@
     "test": "node --import tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@zero/shared": "*",
-    "fastify": "^5.6.0",
     "@fastify/cors": "^11.0.0",
-    "tweetnacl": "^1.0.3",
+    "@fastify/rate-limit": "^10.3.0",
+    "@zero/shared": "*",
     "bs58": "^6.0.0",
+    "fastify": "^5.6.0",
+    "tweetnacl": "^1.0.3",
     "zod": "^4.1.0"
   }
 }

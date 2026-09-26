@@ -13,7 +13,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ZeroConfigProvider>
         <SessionProvider>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'fade' }}>
+          <Stack
+            screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'fade' }}
+          >
             <Stack.Screen name="index" />
             <Stack.Screen name="welcome" />
             <Stack.Screen name="(tabs)" />

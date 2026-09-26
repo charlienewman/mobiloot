@@ -20,7 +20,15 @@ const STEPS: { key: TxState['step']; label: string }[] = [
 ]
 
 /** Bottom sheet that walks through a transaction's life so no wait is unexplained. */
-export function TxSheet({ state, onClose, successNote }: { state: TxState; onClose: () => void; successNote?: string }) {
+export function TxSheet({
+  state,
+  onClose,
+  successNote,
+}: {
+  state: TxState
+  onClose: () => void
+  successNote?: string
+}) {
   const { explorer } = useZero()
   const visible = state.step !== 'idle'
   const current = STEPS.findIndex((s) => s.key === state.step)
@@ -77,7 +85,10 @@ export function TxSheet({ state, onClose, successNote }: { state: TxState; onClo
           </Stack>
         )}
         {state.signature ? (
-          <Pressable onPress={() => WebBrowser.openBrowserAsync(explorer(`tx/${state.signature}`))} accessibilityRole="link">
+          <Pressable
+            onPress={() => WebBrowser.openBrowserAsync(explorer(`tx/${state.signature}`))}
+            accessibilityRole="link"
+          >
             <Row gap={6}>
               <Feather name="external-link" size={14} color={colors.textMuted} />
               <Text variant="small" color={colors.textMuted}>
@@ -86,7 +97,13 @@ export function TxSheet({ state, onClose, successNote }: { state: TxState; onClo
             </Row>
           </Pressable>
         ) : null}
-        {finished ? <Button title={state.step === 'done' ? 'Done' : 'Close'} kind={state.step === 'done' ? 'primary' : 'secondary'} onPress={onClose} /> : null}
+        {finished ? (
+          <Button
+            title={state.step === 'done' ? 'Done' : 'Close'}
+            kind={state.step === 'done' ? 'primary' : 'secondary'}
+            onPress={onClose}
+          />
+        ) : null}
       </View>
     </Modal>
   )

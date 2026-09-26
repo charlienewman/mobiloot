@@ -10,12 +10,20 @@ const treasuryAta = associatedTokenAddress(new PublicKey(config.treasury), pool.
 const treasuryTokens = BigInt((await connection.getTokenAccountBalance(treasuryAta)).value.amount)
 const reserve = await connection.getBalance(pool.reserveStake)
 
-console.log(`zeroSOL pool ${pool.address.toBase58()} (${config.cluster}, epoch ${epoch}, updated ${pool.lastUpdateEpoch})`)
+console.log(
+  `zeroSOL pool ${pool.address.toBase58()} (${config.cluster}, epoch ${epoch}, updated ${pool.lastUpdateEpoch})`,
+)
 console.log(`  total staked      ${sol(pool.totalLamports)} SOL`)
-console.log(`  zeroSOL supply    ${sol(pool.poolTokenSupply)}  (1 zeroSOL = ${(Number(pool.totalLamports) / Number(pool.poolTokenSupply)).toFixed(9)} SOL)`)
+console.log(
+  `  zeroSOL supply    ${sol(pool.poolTokenSupply)}  (1 zeroSOL = ${(Number(pool.totalLamports) / Number(pool.poolTokenSupply)).toFixed(9)} SOL)`,
+)
 console.log(`  epoch fee         ${pool.epochFee.numerator}/${pool.epochFee.denominator} → Shaka treasury`)
 console.log(`  reserve (liquid)  ${sol(reserve)} SOL`)
-console.log(`  treasury earned   ${sol(treasuryTokens)} zeroSOL ≈ ${sol(poolTokensToLamports(pool, treasuryTokens))} SOL`)
+console.log(
+  `  treasury earned   ${sol(treasuryTokens)} zeroSOL ≈ ${sol(poolTokensToLamports(pool, treasuryTokens))} SOL`,
+)
 for (const v of list) {
-  console.log(`  validator ${v.voteAccount.toBase58()}  active ${sol(v.activeStakeLamports)}  transient ${sol(v.transientStakeLamports)}`)
+  console.log(
+    `  validator ${v.voteAccount.toBase58()}  active ${sol(v.activeStakeLamports)}  transient ${sol(v.transientStakeLamports)}`,
+  )
 }

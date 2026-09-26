@@ -14,8 +14,15 @@ export class MockProvider implements MobileProvider {
     const order: ProviderOrder = {
       providerOrderId: id,
       status: 'ready',
-      iccid: '8999' + BigInt('0x' + digest(id).slice(0, 14)).toString().padStart(15, '0').slice(0, 15),
-      activationCode: `LPA:1$rsp.mock.zero.invalid$ZM-${digest(id + 'm').slice(0, 20).toUpperCase()}`,
+      iccid:
+        '8999' +
+        BigInt('0x' + digest(id).slice(0, 14))
+          .toString()
+          .padStart(15, '0')
+          .slice(0, 15),
+      activationCode: `LPA:1$rsp.mock.zero.invalid$ZM-${digest(id + 'm')
+        .slice(0, 20)
+        .toUpperCase()}`,
     }
     this.orders.set(id, { order, createdAt: Date.now() })
     return order

@@ -68,7 +68,11 @@ export default function Account() {
         <Divider />
         <LinkRow icon="code" label="Zero Mobile program" onPress={() => open(`address/${config.zeroProgram}`)} />
         <Divider />
-        <LinkRow icon="briefcase" label="Shaka treasury (where yield goes)" onPress={() => open(`address/${config.treasury}`)} />
+        <LinkRow
+          icon="briefcase"
+          label="Shaka treasury (where yield goes)"
+          onPress={() => open(`address/${config.treasury}`)}
+        />
       </Card>
 
       <Card>
@@ -92,7 +96,15 @@ export default function Account() {
   )
 }
 
-function LinkRow({ icon, label, onPress }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; onPress: () => void }) {
+function LinkRow({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: React.ComponentProps<typeof Feather>['name']
+  label: string
+  onPress: () => void
+}) {
   return (
     <Pressable onPress={onPress} accessibilityRole="link" style={{ minHeight: 44, justifyContent: 'center' }}>
       <Row style={{ justifyContent: 'space-between' }}>

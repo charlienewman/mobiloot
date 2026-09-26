@@ -395,7 +395,13 @@ export function increaseValidatorStakeIx(
   })
 }
 
-export function createTokenMetadataIx(pool: StakePoolState, payer: PublicKey, name: string, symbol: string, uri: string) {
+export function createTokenMetadataIx(
+  pool: StakePoolState,
+  payer: PublicKey,
+  name: string,
+  symbol: string,
+  uri: string,
+) {
   const [metadata] = PublicKey.findProgramAddressSync(
     [Buffer.from('metadata'), METADATA_PROGRAM_ID.toBuffer(), pool.poolMint.toBuffer()],
     METADATA_PROGRAM_ID,

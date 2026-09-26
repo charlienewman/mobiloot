@@ -1,7 +1,13 @@
 // Builds, simulates, signs (via Mobile Wallet Adapter) and confirms the three user
 // transactions: deposit SOL for zeroSOL, withdraw SOL, and activate the plan.
 import { useQueryClient } from '@tanstack/react-query'
-import { Connection, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
+import {
+  Connection,
+  PublicKey,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
+} from '@solana/web3.js'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
 import * as Haptics from 'expo-haptics'
 import { useCallback, useState } from 'react'
@@ -43,7 +49,11 @@ export function useTransactions() {
         const ixs = await build(owner)
         const { context, value: blockhash } = await connection.getLatestBlockhashAndContext()
         const tx = new VersionedTransaction(
-          new TransactionMessage({ payerKey: owner, recentBlockhash: blockhash.blockhash, instructions: ixs }).compileToV0Message(),
+          new TransactionMessage({
+            payerKey: owner,
+            recentBlockhash: blockhash.blockhash,
+            instructions: ixs,
+          }).compileToV0Message(),
         )
         // Catch program errors before bothering the wallet.
         const sim = await connection.simulateTransaction(tx, { sigVerify: false })
@@ -141,6 +151,7 @@ function describeTxError(e: any): string {
   const text = String(e?.message ?? e) + logs.join(' ')
   if (/already in use/.test(text)) return 'Your plan is already active for this period.'
   if (/insufficient (funds|lamports)|0x1\b/.test(text)) return 'Not enough SOL to cover this and the network fee.'
-  if (/SolWithdrawalTooLarge|0x19\b|reserve/i.test(text)) return "The pool's instant-withdrawal reserve is low. Try a smaller amount."
+  if (/SolWithdrawalTooLarge|0x19\b|reserve/i.test(text))
+    return "The pool's instant-withdrawal reserve is low. Try a smaller amount."
   return describeWalletError(e)
 }

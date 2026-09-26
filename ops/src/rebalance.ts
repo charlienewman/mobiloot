@@ -14,7 +14,9 @@ pool = await fetchStakePool(connection, pool.address)
 
 const list = await fetchValidatorList(connection, pool)
 const reserve = BigInt(await connection.getBalance(pool.reserveStake))
-const buffer = BigInt(Math.round(Number(process.env.RESERVE_BUFFER_SOL ?? (CLUSTER === 'localnet' ? 2 : 0.25)) * LAMPORTS_PER_SOL))
+const buffer = BigInt(
+  Math.round(Number(process.env.RESERVE_BUFFER_SOL ?? (CLUSTER === 'localnet' ? 2 : 0.25)) * LAMPORTS_PER_SOL),
+)
 const minDelegation = BigInt((await connection.getStakeMinimumDelegation()).value)
 const available = reserve - buffer
 console.log(`reserve ${sol(reserve)} SOL, buffer ${sol(buffer)}, minimum delegation ${sol(minDelegation)}`)
@@ -26,8 +28,10 @@ if (available < minDelegation || list.length === 0) {
   if (target.transientStakeLamports > 0n) {
     console.log('validator has a transient stake this epoch; try next epoch')
   } else {
-    await send(`delegate ${sol(available)} SOL to ${target.voteAccount.toBase58()}`, [
-      increaseValidatorStakeIx(pool, target, available, target.transientSeedSuffix + 1n),
-    ], [staker])
+    await send(
+      `delegate ${sol(available)} SOL to ${target.voteAccount.toBase58()}`,
+      [increaseValidatorStakeIx(pool, target, available, target.transientSeedSuffix + 1n)],
+      [staker],
+    )
   }
 }

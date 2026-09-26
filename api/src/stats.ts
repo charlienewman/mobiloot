@@ -1,6 +1,12 @@
 import { Connection, PublicKey } from '@solana/web3.js'
 import { Buffer } from 'buffer'
-import { associatedTokenAddress, fetchStakePool, fetchValidatorList, poolTokensToLamports, validatorStakeAddress } from '@zero/shared'
+import {
+  associatedTokenAddress,
+  fetchStakePool,
+  fetchValidatorList,
+  poolTokensToLamports,
+  validatorStakeAddress,
+} from '@zero/shared'
 import { connection, stakePoolAddress } from './chain'
 import { cluster, env } from './env'
 
@@ -32,7 +38,9 @@ export async function poolStats(): Promise<PoolStats> {
   if (statsCache && Date.now() - statsCache.at < 30_000) return statsCache.value
   const [pool, epochInfo] = await Promise.all([fetchStakePool(connection, stakePoolAddress), connection.getEpochInfo()])
   const list = await fetchValidatorList(connection, pool)
-  const stakeAccounts = list.map((v) => validatorStakeAddress(pool.programId, v.voteAccount, pool.address, v.validatorSeedSuffix))
+  const stakeAccounts = list.map((v) =>
+    validatorStakeAddress(pool.programId, v.voteAccount, pool.address, v.validatorSeedSuffix),
+  )
 
   let rewards = 0n
   let base = 0n
@@ -53,7 +61,9 @@ export async function poolStats(): Promise<PoolStats> {
   const apySource: PoolStats['apySource'] = plausible ? 'measured' : 'reference'
 
   const treasuryAta = associatedTokenAddress(new PublicKey(cluster.treasury), pool.poolMint)
-  const treasuryTokens = BigInt((await connection.getTokenAccountBalance(treasuryAta).catch(() => undefined))?.value.amount ?? '0')
+  const treasuryTokens = BigInt(
+    (await connection.getTokenAccountBalance(treasuryAta).catch(() => undefined))?.value.amount ?? '0',
+  )
 
   const value: PoolStats = {
     cluster: cluster.cluster,

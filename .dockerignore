@@ -1,0 +1,7 @@
+**/node_modules
+app
+anchor
+keys
+.localnet
+api/data
+.git

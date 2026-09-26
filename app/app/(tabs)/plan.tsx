@@ -41,8 +41,8 @@ export default function Plan() {
           <Card>
             <Text variant="heading">Activate for this period</Text>
             <Text color={colors.textMuted}>
-              This writes your plan entitlement to Solana for the period ending in {daysUntil(config.period.end)} days. No personal or SIM data
-              goes on-chain.
+              This writes your plan entitlement to Solana for the period ending in {daysUntil(config.period.end)} days.
+              No personal or SIM data goes on-chain.
             </Text>
             {config.paused ? <Notice tone="warn">Activations are paused right now.</Notice> : null}
             <Button
@@ -69,7 +69,11 @@ export default function Plan() {
         <Provisioning entitlementAddress={entitlement.address} order={esim} />
       )}
 
-      <TxSheet state={tx.state} onClose={tx.reset} successNote="Your plan is active on-chain for this period. Next, get your eSIM." />
+      <TxSheet
+        state={tx.state}
+        onClose={tx.reset}
+        successNote="Your plan is active on-chain for this period. Next, get your eSIM."
+      />
     </Screen>
   )
 }
@@ -123,7 +127,11 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
   const failed = provision.isError || order?.status === 'failed'
   const steps = [
     { label: 'Plan entitlement confirmed on Solana', done: true },
-    { label: config.providerMode === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered from Shaka', done: false, active: provision.isPending },
+    {
+      label: config.providerMode === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered from Shaka',
+      done: false,
+      active: provision.isPending,
+    },
     { label: 'eSIM ready to install', done: false },
   ]
   return (
@@ -145,7 +153,10 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
           </Row>
         ))}
       </Stack>
-      <Pressable onPress={() => WebBrowser.openBrowserAsync(explorer(`address/${entitlementAddress}`))} accessibilityRole="link">
+      <Pressable
+        onPress={() => WebBrowser.openBrowserAsync(explorer(`address/${entitlementAddress}`))}
+        accessibilityRole="link"
+      >
         <Row gap={6}>
           <Feather name="external-link" size={14} color={colors.textMuted} />
           <Text variant="small" color={colors.textMuted}>
@@ -154,9 +165,16 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
         </Row>
       </Pressable>
       {failed ? (
-        <Notice tone="danger">{(provision.error as Error)?.message ?? order?.error ?? 'The eSIM order failed.'} Your plan is safe on-chain; try again.</Notice>
+        <Notice tone="danger">
+          {(provision.error as Error)?.message ?? order?.error ?? 'The eSIM order failed.'} Your plan is safe on-chain;
+          try again.
+        </Notice>
       ) : null}
-      <Button title={failed ? 'Try again' : 'Get my eSIM'} loading={provision.isPending} onPress={() => provision.mutate()} />
+      <Button
+        title={failed ? 'Try again' : 'Get my eSIM'}
+        loading={provision.isPending}
+        onPress={() => provision.mutate()}
+      />
     </Card>
   )
 }
@@ -228,20 +246,30 @@ function EsimReady({ order }: { order: EsimOrder }) {
         </Row>
         <Stack gap={space.sm}>
           <Text color={colors.textMuted}>1. Open SIM settings and choose Add eSIM (or Download a SIM).</Text>
-          <Text color={colors.textMuted}>2. Pick &quot;Enter code manually&quot; and paste the activation code, or scan the QR from another screen.</Text>
+          <Text color={colors.textMuted}>
+            2. Pick &quot;Enter code manually&quot; and paste the activation code, or scan the QR from another screen.
+          </Text>
           <Text color={colors.textMuted}>3. Turn on the Zero line for mobile data.</Text>
         </Stack>
         {order.providerMode === 'mock' ? (
-          <Notice tone="info">This is a mock eSIM for the demo. Its code points to a test server and will not install a live line.</Notice>
+          <Notice tone="info">
+            This is a mock eSIM for the demo. Its code points to a test server and will not install a live line.
+          </Notice>
         ) : null}
         {revealed ? (
           <Stack gap={space.md}>
-            <Notice tone="warn">Anyone with this code can install your eSIM. Don&apos;t share it or post it publicly.</Notice>
+            <Notice tone="warn">
+              Anyone with this code can install your eSIM. Don&apos;t share it or post it publicly.
+            </Notice>
             <View style={{ alignSelf: 'center', padding: space.md, backgroundColor: '#fff', borderRadius: radius.md }}>
               <QRCode value={revealed.activationCode} size={180} />
             </View>
-            {revealed.smdpAddress ? <CopyRow label="SM-DP+ address" value={revealed.smdpAddress} copied={copied} onCopy={copy} /> : null}
-            {revealed.matchingId ? <CopyRow label="Activation code" value={revealed.matchingId} copied={copied} onCopy={copy} /> : null}
+            {revealed.smdpAddress ? (
+              <CopyRow label="SM-DP+ address" value={revealed.smdpAddress} copied={copied} onCopy={copy} />
+            ) : null}
+            {revealed.matchingId ? (
+              <CopyRow label="Activation code" value={revealed.matchingId} copied={copied} onCopy={copy} />
+            ) : null}
             <CopyRow label="Full LPA string" value={revealed.activationCode} copied={copied} onCopy={copy} />
             <Button title="Hide code" kind="ghost" onPress={() => setRevealed(null)} />
           </Stack>
@@ -254,7 +282,11 @@ function EsimReady({ order }: { order: EsimOrder }) {
             icon={<Feather name="eye" size={18} color={colors.text} />}
           />
         )}
-        <Button title="Open SIM settings" onPress={openSimSettings} icon={<Feather name="settings" size={18} color={colors.limeInk} />} />
+        <Button
+          title="Open SIM settings"
+          onPress={openSimSettings}
+          icon={<Feather name="settings" size={18} color={colors.limeInk} />}
+        />
       </Card>
 
       <Card>
@@ -285,9 +317,24 @@ function EsimReady({ order }: { order: EsimOrder }) {
   )
 }
 
-function CopyRow({ label, value, copied, onCopy }: { label: string; value: string; copied: string | null; onCopy: (l: string, v: string) => void }) {
+function CopyRow({
+  label,
+  value,
+  copied,
+  onCopy,
+}: {
+  label: string
+  value: string
+  copied: string | null
+  onCopy: (l: string, v: string) => void
+}) {
   return (
-    <Pressable onPress={() => onCopy(label, value)} accessibilityRole="button" accessibilityLabel={`Copy ${label}`} style={styles.copyRow}>
+    <Pressable
+      onPress={() => onCopy(label, value)}
+      accessibilityRole="button"
+      accessibilityLabel={`Copy ${label}`}
+      style={styles.copyRow}
+    >
       <Stack gap={2} style={{ flex: 1 }}>
         <Text variant="label" color={colors.textMuted}>
           {label}
@@ -296,13 +343,21 @@ function CopyRow({ label, value, copied, onCopy }: { label: string; value: strin
           {value}
         </Text>
       </Stack>
-      <Feather name={copied === label ? 'check' : 'copy'} size={18} color={copied === label ? colors.lime : colors.textMuted} />
+      <Feather
+        name={copied === label ? 'check' : 'copy'}
+        size={18}
+        color={copied === label ? colors.lime : colors.textMuted}
+      />
     </Pressable>
   )
 }
 
 async function openSimSettings() {
-  for (const action of ['android.settings.MANAGE_ALL_SIM_PROFILES_SETTINGS', 'android.settings.NETWORK_OPERATOR_SETTINGS', 'android.settings.WIRELESS_SETTINGS']) {
+  for (const action of [
+    'android.settings.MANAGE_ALL_SIM_PROFILES_SETTINGS',
+    'android.settings.NETWORK_OPERATOR_SETTINGS',
+    'android.settings.WIRELESS_SETTINGS',
+  ]) {
     try {
       await Linking.sendIntent(action)
       return

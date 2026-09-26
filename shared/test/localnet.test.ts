@@ -4,7 +4,15 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import { before, describe, test } from 'node:test'
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionInstruction, sendAndConfirmTransaction } from '@solana/web3.js'
+import {
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  sendAndConfirmTransaction,
+} from '@solana/web3.js'
 import { Buffer } from 'buffer'
 import {
   activateIx,
@@ -27,7 +35,10 @@ import {
 
 const cfgPath = path.resolve(import.meta.dirname, '../../config/localnet.json')
 const connection = new Connection('http://127.0.0.1:8899', 'confirmed')
-const reachable = await connection.getVersion().then(() => true, () => false)
+const reachable = await connection.getVersion().then(
+  () => true,
+  () => false,
+)
 const skip = !reachable ? 'localnet not running' : !fs.existsSync(cfgPath) ? 'pool not set up' : false
 
 describe('zeroSOL + entitlement on localnet', { skip }, () => {
@@ -74,7 +85,16 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     assert.ok(held > 1_990_000_000n && held <= 2_000_000_000n, `held ${held}`)
 
     const p = period()
-    await send(user, activateIx({ owner: user.publicKey, stakePool: pool.address, holderTokens: associatedTokenAddress(user.publicKey, pool.poolMint), period: p, programId }))
+    await send(
+      user,
+      activateIx({
+        owner: user.publicKey,
+        stakePool: pool.address,
+        holderTokens: associatedTokenAddress(user.publicKey, pool.poolMint),
+        period: p,
+        programId,
+      }),
+    )
     const addr = entitlementAddress(user.publicKey, p, programId)
     const ent = decodeEntitlement(addr, Buffer.from((await connection.getAccountInfo(addr))!.data))
     assert.ok(ent.owner.equals(user.publicKey))
@@ -83,18 +103,39 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     assert.ok(ent.stakeLamports >= config.minStakeLamports)
 
     await assert.rejects(
-      send(user, activateIx({ owner: user.publicKey, stakePool: pool.address, holderTokens: associatedTokenAddress(user.publicKey, pool.poolMint), period: p, programId })),
+      send(
+        user,
+        activateIx({
+          owner: user.publicKey,
+          stakePool: pool.address,
+          holderTokens: associatedTokenAddress(user.publicKey, pool.poolMint),
+          period: p,
+          programId,
+        }),
+      ),
       /already in use/,
       'second activation in the same period must fail',
     )
-    await assert.rejects(send(user, closeEntitlementIx(user.publicKey, addr, programId)), (e) => zeroErrorMessage(e) === 'This billing period has not ended yet')
+    await assert.rejects(
+      send(user, closeEntitlementIx(user.publicKey, addr, programId)),
+      (e) => zeroErrorMessage(e) === 'This billing period has not ended yet',
+    )
   })
 
   test('rejects wallets without enough zeroSOL', async () => {
     const user = await funded(2)
     await deposit(user, 0.1)
     await assert.rejects(
-      send(user, activateIx({ owner: user.publicKey, stakePool: pool.address, holderTokens: associatedTokenAddress(user.publicKey, pool.poolMint), period: period(), programId })),
+      send(
+        user,
+        activateIx({
+          owner: user.publicKey,
+          stakePool: pool.address,
+          holderTokens: associatedTokenAddress(user.publicKey, pool.poolMint),
+          period: period(),
+          programId,
+        }),
+      ),
       (e) => zeroErrorMessage(e) === 'Not enough zeroSOL to fund this plan',
     )
   })
@@ -104,11 +145,29 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     await deposit(whale, 2)
     const user = await funded(1)
     await assert.rejects(
-      send(user, activateIx({ owner: user.publicKey, stakePool: pool.address, holderTokens: associatedTokenAddress(whale.publicKey, pool.poolMint), period: period(), programId })),
+      send(
+        user,
+        activateIx({
+          owner: user.publicKey,
+          stakePool: pool.address,
+          holderTokens: associatedTokenAddress(whale.publicKey, pool.poolMint),
+          period: period(),
+          programId,
+        }),
+      ),
       (e) => zeroErrorMessage(e) === 'That token account belongs to someone else',
     )
     await assert.rejects(
-      send(whale, activateIx({ owner: whale.publicKey, stakePool: pool.address, holderTokens: associatedTokenAddress(whale.publicKey, pool.poolMint), period: period() + 1n, programId })),
+      send(
+        whale,
+        activateIx({
+          owner: whale.publicKey,
+          stakePool: pool.address,
+          holderTokens: associatedTokenAddress(whale.publicKey, pool.poolMint),
+          period: period() + 1n,
+          programId,
+        }),
+      ),
       (e) => zeroErrorMessage(e) === 'That is not the current billing period',
     )
   })

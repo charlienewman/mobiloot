@@ -54,7 +54,12 @@ export function ZeroConfigProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ZeroContext | null>(() => {
     if (!config) return null
-    const custom = config.cluster === 'localnet' ? `?cluster=custom&customUrl=${encodeURIComponent(config.rpcUrl)}` : config.cluster === 'devnet' ? '?cluster=devnet' : ''
+    const custom =
+      config.cluster === 'localnet'
+        ? `?cluster=custom&customUrl=${encodeURIComponent(config.rpcUrl)}`
+        : config.cluster === 'devnet'
+          ? '?cluster=devnet'
+          : ''
     return {
       config,
       connection: new Connection(config.rpcUrl, 'confirmed'),
@@ -67,7 +72,16 @@ export function ZeroConfigProvider({ children }: { children: ReactNode }) {
 
   if (!value) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', gap: space.xl, padding: space.xl }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.bg,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: space.xl,
+          padding: space.xl,
+        }}
+      >
         <ZeroMark size={72} />
         {query.isError && cached === null ? (
           <>

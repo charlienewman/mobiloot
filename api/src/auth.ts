@@ -77,32 +77,33 @@ export function verifySignIn(
     signature = decodeBytes(args.signature)
     if (signature.length !== 64) throw new Error()
   } catch {
-    fs.writeFileSync('/tmp/claude-1000/-home-charlie-Documents-Web-clockin/b45bc483-1e93-40fc-884a-2efa1fa2f627/scratchpad/siws.json', JSON.stringify(args))
+    fs.writeFileSync(
+      '/tmp/claude-1000/-home-charlie-Documents-Web-clockin/b45bc483-1e93-40fc-884a-2efa1fa2f627/scratchpad/siws.json',
+      JSON.stringify(args),
+    )
     throw new AuthError('Malformed sign-in')
   }
   if (!nacl.sign.detached.verify(message, signature, address.toBytes())) throw new AuthError('Invalid signature')
 
   const lines = message.toString('utf8').split('\n')
   const field = (name: string) => lines.find((l) => l.startsWith(`${name}: `))?.slice(name.length + 2)
-  if (lines[0] !== `${expectedDomain} wants you to sign in with your Solana account:`) throw new AuthError('Wrong domain')
+  if (lines[0] !== `${expectedDomain} wants you to sign in with your Solana account:`)
+    throw new AuthError('Wrong domain')
   if (lines[1] !== address.toBase58()) throw new AuthError('Address mismatch')
   const nonce = field('Nonce')
   if (!nonce) throw new AuthError('Missing nonce')
 
   const row = db.prepare('SELECT message, expires_at FROM challenges WHERE nonce = ?').get(nonce) as
-    | { message: string; expires_at: number }
-    | undefined
+    { message: string; expires_at: number } | undefined
   if (!row) throw new AuthError('Unknown challenge')
   if (row.expires_at < now) throw new AuthError('Challenge expired')
   const issued = JSON.parse(row.message) as SiwsInput
   if (field('Chain ID') && field('Chain ID') !== issued.chainId) throw new AuthError('Wrong chain')
 
   // Consume atomically so a replayed signature cannot mint a second session.
-  const consumed = db.prepare('UPDATE challenges SET consumed_at = ?, address = ? WHERE nonce = ? AND consumed_at IS NULL').run(
-    now,
-    address.toBase58(),
-    nonce,
-  )
+  const consumed = db
+    .prepare('UPDATE challenges SET consumed_at = ?, address = ? WHERE nonce = ? AND consumed_at IS NULL')
+    .run(now, address.toBase58(), nonce)
   if (consumed.changes !== 1) throw new AuthError('Challenge already used')
 
   const token = crypto.randomBytes(32).toString('base64url')
@@ -118,8 +119,7 @@ export function verifySignIn(
 export function sessionAddress(db: Db, token: string | undefined, now = Date.now()): string | undefined {
   if (!token) return undefined
   const row = db.prepare('SELECT address, expires_at FROM sessions WHERE token_hash = ?').get(hash(token)) as
-    | { address: string; expires_at: number }
-    | undefined
+    { address: string; expires_at: number } | undefined
   return row && row.expires_at > now ? row.address : undefined
 }
 

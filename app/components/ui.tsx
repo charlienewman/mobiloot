@@ -18,12 +18,7 @@ import { colors, radius, space, type } from '@/constants/theme'
 
 type Variant = keyof typeof type
 
-export function Text({
-  variant = 'body',
-  color,
-  style,
-  ...props
-}: TextProps & { variant?: Variant; color?: string }) {
+export function Text({ variant = 'body', color, style, ...props }: TextProps & { variant?: Variant; color?: string }) {
   return <RNText {...props} style={[type[variant] as TextStyle, { color: color ?? colors.text }, style]} />
 }
 
@@ -42,7 +37,11 @@ export function Screen({
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       {header}
       {scroll ? (
-        <ScrollView contentContainerStyle={styles.content} refreshControl={refreshControl} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          refreshControl={refreshControl}
+          showsVerticalScrollIndicator={false}
+        >
           {children}
         </ScrollView>
       ) : (
@@ -52,7 +51,15 @@ export function Screen({
   )
 }
 
-export function Card({ children, style, tone = 'default' }: { children: ReactNode; style?: StyleProp<ViewStyle>; tone?: 'default' | 'lime' | 'raised' }) {
+export function Card({
+  children,
+  style,
+  tone = 'default',
+}: {
+  children: ReactNode
+  style?: StyleProp<ViewStyle>
+  tone?: 'default' | 'lime' | 'raised'
+}) {
   return (
     <View
       style={[
@@ -75,7 +82,15 @@ export function Row({ children, style, gap = space.md, ...rest }: ViewProps & { 
   )
 }
 
-export function Stack({ children, style, gap = space.md }: { children: ReactNode; style?: StyleProp<ViewStyle>; gap?: number }) {
+export function Stack({
+  children,
+  style,
+  gap = space.md,
+}: {
+  children: ReactNode
+  style?: StyleProp<ViewStyle>
+  gap?: number
+}) {
   return <View style={[{ gap }, style]}>{children}</View>
 }
 
@@ -156,7 +171,17 @@ export function Chip({ label, tone = 'neutral', icon }: { label: string; tone?: 
   )
 }
 
-export function Stat({ label, value, sub, align = 'left' }: { label: string; value: string; sub?: string; align?: 'left' | 'right' }) {
+export function Stat({
+  label,
+  value,
+  sub,
+  align = 'left',
+}: {
+  label: string
+  value: string
+  sub?: string
+  align?: 'left' | 'right'
+}) {
   return (
     <View style={{ gap: 2, alignItems: align === 'right' ? 'flex-end' : 'flex-start', flex: 1 }}>
       <Text variant="label" color={colors.textMuted}>
@@ -208,8 +233,14 @@ export function Notice({ children, tone = 'info' }: { children: ReactNode; tone?
 
 export function ProgressBar({ value, color = colors.lime }: { value: number; color?: string }) {
   return (
-    <View style={styles.progressTrack} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100) }}>
-      <View style={[styles.progressFill, { width: `${Math.max(0, Math.min(1, value)) * 100}%`, backgroundColor: color }]} />
+    <View
+      style={styles.progressTrack}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100) }}
+    >
+      <View
+        style={[styles.progressFill, { width: `${Math.max(0, Math.min(1, value)) * 100}%`, backgroundColor: color }]}
+      />
     </View>
   )
 }

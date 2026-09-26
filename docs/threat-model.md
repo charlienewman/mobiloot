@@ -22,6 +22,7 @@ Test clusters only; no mainnet funds are involved.
 | **Wrong period.** Pre-activating future periods while funded. | `period` must equal the period computed from the on-chain clock. |
 | **Config takeover.** Someone front-runs `initialize`. | `initialize` requires the signer to be the program's upgrade authority (checked through ProgramData). |
 | **Session replay.** Reusing a signed sign-in message. | Nonces are single-use and consumed atomically, expire after 5 minutes, and the message is bound to the API's domain and chain. The signature is verified over the exact signed bytes. |
+| **Brute force / abuse.** | Per-IP rate limits: 240 req/min overall, 20/min on sign-in, provisioning and code reveal. |
 | **Session theft.** | Tokens are random 256-bit values stored hashed on the server, and in the OS keystore via `expo-secure-store` on the device. 7-day expiry, revoked on logout. |
 | **Double provisioning.** | `UNIQUE(address, period, provider_mode)` in the database plus provider-side idempotency keys. Concurrent requests share one order (tested). |
 | **Activation code leak.** | Codes are never logged, are masked in all API responses except an explicit authenticated reveal, and are hidden again after 60 seconds in the app. Nothing telecom-related goes on-chain. |

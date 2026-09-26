@@ -64,7 +64,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const input = await api<Record<string, string>>('/v1/auth/challenge', { method: 'POST' })
       const result = await wallet.signIn(input)
-      const signedMessage = unwrapBase64(result.signedMessage, (b) => b.toString('utf8').includes(' wants you to sign in'))
+      const signedMessage = unwrapBase64(result.signedMessage, (b) =>
+        b.toString('utf8').includes(' wants you to sign in'),
+      )
       const signature = unwrapBase64(result.signature, (b) => b.length === 64)
       // The SIWS message names the signing account on its second line; the server
       // verifies the signature against it, so it is the most reliable source.

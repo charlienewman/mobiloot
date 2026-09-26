@@ -42,7 +42,8 @@ export default function Stake() {
   const after = useFunding(afterLamports)
   const active = Boolean(me.data?.entitlement)
 
-  const setFraction = (f: number) => setAmount(((maxLamports * f) / 1e9).toFixed(mode === 'stake' ? 3 : 4).replace(/\.?0+$/, ''))
+  const setFraction = (f: number) =>
+    setAmount(((maxLamports * f) / 1e9).toFixed(mode === 'stake' ? 3 : 4).replace(/\.?0+$/, ''))
 
   const submit = async () => {
     const sig = mode === 'stake' ? await tx.deposit(BigInt(lamports)) : await tx.withdraw(BigInt(lamports))
@@ -71,7 +72,14 @@ export default function Stake() {
             placeholderTextColor={colors.textFaint}
             keyboardType="decimal-pad"
             accessibilityLabel={mode === 'stake' ? 'Amount of SOL to stake' : 'Amount of zeroSOL to redeem'}
-            style={{ flex: 1, color: colors.text, fontSize: 44, fontWeight: '800', padding: 0, fontVariant: ['tabular-nums'] }}
+            style={{
+              flex: 1,
+              color: colors.text,
+              fontSize: 44,
+              fontWeight: '800',
+              padding: 0,
+              fontVariant: ['tabular-nums'],
+            }}
           />
           <Text variant="title" color={colors.textMuted}>
             {mode === 'stake' ? 'SOL' : 'zeroSOL'}
@@ -99,8 +107,8 @@ export default function Stake() {
         />
         {mode === 'stake' ? (
           <Text variant="small" color={colors.textMuted}>
-            You receive about {sol(lamports / rate, 4)} zeroSOL. Your principal stays redeemable, and the staking rewards go to Shaka to pay for
-            your plan.
+            You receive about {sol(lamports / rate, 4)} zeroSOL. Your principal stays redeemable, and the staking
+            rewards go to Shaka to pay for your plan.
           </Text>
         ) : (
           <Text variant="small" color={colors.textMuted}>
@@ -115,7 +123,9 @@ export default function Stake() {
         </Notice>
       ) : null}
       {reserveShort && lamports > 0 ? (
-        <Notice tone="warn">The pool&apos;s instant-withdrawal reserve is {sol(reserve)} SOL right now. Try a smaller amount.</Notice>
+        <Notice tone="warn">
+          The pool&apos;s instant-withdrawal reserve is {sol(reserve)} SOL right now. Try a smaller amount.
+        </Notice>
       ) : null}
 
       <Button
@@ -136,21 +146,26 @@ export default function Stake() {
           {now.fullStakeSol.toFixed(1)} SOL
         </Text>
         <Text variant="small" color={colors.textMuted}>
-          {config.plan.name} costs Shaka about {usd(config.plan.monthlyCostUsd, 0)} a month. At {pct(now.apy, 1)} yield (
-          {now.apySource === 'measured' ? 'measured' : 'mainnet reference'}) and SOL at {usd(now.solUsd, 0)} (
-          {now.priceSource === 'pyth' ? 'Pyth' : 'estimate'}), that stake&apos;s rewards cover the plan. These are estimates, not guarantees:
-          yield and SOL&apos;s price both move.
+          {config.plan.name} costs Shaka about {usd(config.plan.monthlyCostUsd, 0)} a month. At {pct(now.apy, 1)} yield
+          ({now.apySource === 'measured' ? 'measured' : 'mainnet reference'}) and SOL at {usd(now.solUsd, 0)} (
+          {now.priceSource === 'pyth' ? 'Pyth' : 'estimate'}), that stake&apos;s rewards cover the plan. These are
+          estimates, not guarantees: yield and SOL&apos;s price both move.
         </Text>
         <Divider />
         <Text variant="small" color={colors.textMuted}>
-          Staking carries risk, including validator downtime and smart-contract risk. zeroSOL is always redeemable for its share of the pool.
+          Staking carries risk, including validator downtime and smart-contract risk. zeroSOL is always redeemable for
+          its share of the pool.
         </Text>
       </Card>
 
       <TxSheet
         state={tx.state}
         onClose={tx.reset}
-        successNote={tx.state.kind === 'deposit' ? 'Your zeroSOL is in your wallet. Its rewards now go towards your plan.' : 'Your SOL is back in your wallet.'}
+        successNote={
+          tx.state.kind === 'deposit'
+            ? 'Your zeroSOL is in your wallet. Its rewards now go towards your plan.'
+            : 'Your SOL is back in your wallet.'
+        }
       />
     </Screen>
   )
@@ -158,14 +173,29 @@ export default function Stake() {
 
 function Segmented({ value, onChange }: { value: Mode; onChange: (m: Mode) => void }) {
   return (
-    <View style={{ flexDirection: 'row', backgroundColor: colors.surface, borderRadius: radius.pill, padding: 4, borderWidth: 1, borderColor: colors.border }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        backgroundColor: colors.surface,
+        borderRadius: radius.pill,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: colors.border,
+      }}
+    >
       {(['stake', 'withdraw'] as const).map((m) => (
         <Pressable
           key={m}
           onPress={() => onChange(m)}
           accessibilityRole="tab"
           accessibilityState={{ selected: value === m }}
-          style={{ flex: 1, paddingVertical: 12, borderRadius: radius.pill, alignItems: 'center', backgroundColor: value === m ? colors.surfaceRaised : 'transparent' }}
+          style={{
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: radius.pill,
+            alignItems: 'center',
+            backgroundColor: value === m ? colors.surfaceRaised : 'transparent',
+          }}
         >
           <Text variant="heading" color={value === m ? colors.text : colors.textMuted}>
             {m === 'stake' ? 'Stake' : 'Withdraw'}

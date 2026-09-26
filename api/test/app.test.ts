@@ -34,7 +34,15 @@ function setup() {
   const deps: Deps = {
     db: openDb(':memory:'),
     provider,
-    cluster: { cluster: 'localnet', rpcUrl: 'http://x', stakePoolProgram: 'p', stakePool: 's', poolMint: 'm', treasury: 't', zeroProgram: 'z' },
+    cluster: {
+      cluster: 'localnet',
+      rpcUrl: 'http://x',
+      stakePoolProgram: 'p',
+      stakePool: 's',
+      poolMint: 'm',
+      treasury: 't',
+      zeroProgram: 'z',
+    },
     signInDomain: 'zero.test',
     fetchZeroConfig: async () => config,
     currentPeriod: async () => 1n,
@@ -79,7 +87,11 @@ async function signIn(app: ReturnType<typeof buildApp>, kp: Keypair, overrides: 
     signature: b64(nacl.sign.detached(Buffer.from(message), kp.secretKey)),
   }
 }
-const verifyBody = (s: Awaited<ReturnType<typeof signIn>>) => ({ address: s.address, signedMessage: s.signedMessage, signature: s.signature })
+const verifyBody = (s: Awaited<ReturnType<typeof signIn>>) => ({
+  address: s.address,
+  signedMessage: s.signedMessage,
+  signature: s.signature,
+})
 
 describe('auth', () => {
   let ctx: ReturnType<typeof setup>
@@ -93,14 +105,21 @@ describe('auth', () => {
     assert.match(s.message, new RegExp(`Nonce: ${s.nonce}`))
     const res = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })
     assert.equal(res.statusCode, 200)
-    const me = await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: { authorization: `Bearer ${res.json().token}` } })
+    const me = await ctx.app.inject({
+      method: 'GET',
+      url: '/v1/me',
+      headers: { authorization: `Bearer ${res.json().token}` },
+    })
     assert.equal(me.statusCode, 200)
     assert.equal(me.json().address, s.address)
   })
 
   test('rejects a replayed challenge', async () => {
     const s = await signIn(ctx.app, Keypair.generate())
-    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).statusCode, 200)
+    assert.equal(
+      (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).statusCode,
+      200,
+    )
     const replay = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })
     assert.equal(replay.statusCode, 401)
     assert.equal(replay.json().error, 'Challenge already used')
@@ -111,7 +130,11 @@ describe('auth', () => {
     const attacker = Keypair.generate()
     const s = await signIn(ctx.app, victim)
     const forged = b64(nacl.sign.detached(Buffer.from(s.message), attacker.secretKey))
-    const r1 = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: { ...verifyBody(s), signature: forged } })
+    const r1 = await ctx.app.inject({
+      method: 'POST',
+      url: '/v1/auth/verify',
+      payload: { ...verifyBody(s), signature: forged },
+    })
     assert.equal(r1.json().error, 'Invalid signature')
     // Attacker signs the victim's message text with their own key: address line mismatch.
     const r2 = await ctx.app.inject({
@@ -125,11 +148,20 @@ describe('auth', () => {
   test('rejects messages for another domain, chain or an unissued nonce', async () => {
     const kp = Keypair.generate()
     const wrongDomain = await signIn(ctx.app, kp, { domain: 'evil.test' })
-    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(wrongDomain) })).json().error, 'Wrong domain')
+    assert.equal(
+      (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(wrongDomain) })).json().error,
+      'Wrong domain',
+    )
     const wrongChain = await signIn(ctx.app, kp, { chainId: 'solana:mainnet' })
-    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(wrongChain) })).json().error, 'Wrong chain')
+    assert.equal(
+      (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(wrongChain) })).json().error,
+      'Wrong chain',
+    )
     const madeUp = await signIn(ctx.app, kp, { nonce: 'f'.repeat(32) })
-    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(madeUp) })).json().error, 'Unknown challenge')
+    assert.equal(
+      (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(madeUp) })).json().error,
+      'Unknown challenge',
+    )
   })
 
   test('rejects expired challenges', async () => {
@@ -139,9 +171,20 @@ describe('auth', () => {
     assert.equal(res.json().error, 'Challenge expired')
   })
 
+  test('rate-limits sign-in attempts', async () => {
+    const codes = []
+    for (let i = 0; i < 22; i++)
+      codes.push((await ctx.app.inject({ method: 'POST', url: '/v1/auth/challenge' })).statusCode)
+    assert.equal(codes.filter((c) => c === 200).length, 20)
+    assert.equal(codes.at(-1), 429)
+  })
+
   test('protected routes need a session', async () => {
     assert.equal((await ctx.app.inject({ method: 'GET', url: '/v1/me' })).statusCode, 401)
-    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: { authorization: 'Bearer nope' } })).statusCode, 401)
+    assert.equal(
+      (await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: { authorization: 'Bearer nope' } })).statusCode,
+      401,
+    )
   })
 })
 
@@ -153,7 +196,8 @@ describe('eSIM provisioning', () => {
     ctx = setup()
     kp = Keypair.generate()
     const s = await signIn(ctx.app, kp)
-    const token = (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).json().token
+    const token = (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).json()
+      .token
     auth = { authorization: `Bearer ${token}` }
   })
 
@@ -172,7 +216,9 @@ describe('eSIM provisioning', () => {
 
   test('provisions once and stays idempotent across retries', async () => {
     ctx.entitle(kp)
-    const results = await Promise.all([1, 2, 3].map(() => ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })))
+    const results = await Promise.all(
+      [1, 2, 3].map(() => ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })),
+    )
     const ids = new Set(results.map((r) => r.json().id))
     assert.equal(ids.size, 1)
     assert.equal(results[0].json().status, 'ready')

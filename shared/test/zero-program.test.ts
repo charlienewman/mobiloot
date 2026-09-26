@@ -13,8 +13,10 @@ const idl = fs.existsSync(idlPath) ? JSON.parse(fs.readFileSync(idlPath, 'utf8')
 test('discriminators, errors and program id match the IDL', { skip: !idl && 'run anchor build first' }, () => {
   assert.equal(idl.address, ZERO_PROGRAM_ID.toBase58())
   const camel = (s: string) => s.replace(/_(\w)/g, (_, c) => c.toUpperCase())
-  for (const ix of idl.instructions) assert.deepEqual([...(DISCRIMINATORS as any)[camel(ix.name)]], ix.discriminator, ix.name)
-  for (const acct of idl.accounts) assert.deepEqual([...(DISCRIMINATORS as any)[acct.name]], acct.discriminator, acct.name)
+  for (const ix of idl.instructions)
+    assert.deepEqual([...(DISCRIMINATORS as any)[camel(ix.name)]], ix.discriminator, ix.name)
+  for (const acct of idl.accounts)
+    assert.deepEqual([...(DISCRIMINATORS as any)[acct.name]], acct.discriminator, acct.name)
   for (const err of idl.errors) assert.ok(ZERO_ERRORS[err.code], `missing message for ${err.name}`)
 })
 

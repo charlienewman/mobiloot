@@ -9,9 +9,21 @@ import { useZero } from '@/features/config'
 import { useSession } from '@/features/session'
 
 const STEPS = [
-  { icon: 'layers', title: 'Stake SOL for zeroSOL', body: 'Your SOL goes into the Zero stake pool. You keep zeroSOL in your own wallet and can withdraw any time.' },
-  { icon: 'zap', title: 'Your yield pays for your plan', body: 'Staking rewards go to Shaka to cover your plan. Your principal stays yours.' },
-  { icon: 'smartphone', title: 'Activate your eSIM', body: 'Unlock the plan on-chain and install your Shaka eSIM, with no card and no monthly bill.' },
+  {
+    icon: 'layers',
+    title: 'Stake SOL for zeroSOL',
+    body: 'Your SOL goes into the Zero stake pool. You keep zeroSOL in your own wallet and can withdraw any time.',
+  },
+  {
+    icon: 'zap',
+    title: 'Your yield pays for your plan',
+    body: 'Staking rewards go to Shaka to cover your plan. Your principal stays yours.',
+  },
+  {
+    icon: 'smartphone',
+    title: 'Activate your eSIM',
+    body: 'Unlock the plan on-chain and install your Shaka eSIM, with no card and no monthly bill.',
+  },
 ] as const
 
 export default function Welcome() {
@@ -40,7 +52,16 @@ export default function Welcome() {
           <Stack gap={space.lg}>
             {STEPS.map((s, i) => (
               <Row key={s.title} style={{ alignItems: 'flex-start' }}>
-                <View style={{ width: 36, height: 36, borderRadius: radius.sm, backgroundColor: colors.surfaceRaised, alignItems: 'center', justifyContent: 'center' }}>
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: radius.sm,
+                    backgroundColor: colors.surfaceRaised,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <Feather name={s.icon} size={18} color={colors.lime} />
                 </View>
                 <View style={{ flex: 1, gap: 2 }}>
@@ -64,7 +85,11 @@ export default function Welcome() {
             icon={busy ? undefined : <Feather name="link" size={18} color={colors.limeInk} />}
             accessibilityHint="Opens your Solana wallet to connect and sign in"
           />
-          <Pressable onPress={() => router.push('/how-it-works')} accessibilityRole="link" style={{ alignSelf: 'center', padding: space.sm }}>
+          <Pressable
+            onPress={() => router.push('/how-it-works')}
+            accessibilityRole="link"
+            style={{ alignSelf: 'center', padding: space.sm }}
+          >
             <Text variant="small" color={colors.textMuted}>
               How does this work?
             </Text>
