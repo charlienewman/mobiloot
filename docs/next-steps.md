@@ -65,8 +65,7 @@ Solflare, set to devnet) before recording.
 
 ## 6. Competition admin
 
-- [ ] Register on Align (personal builder profile) before the sign-up deadline
-  on the event schedule.
+- [x] Registered on Align as an individual (2 Oct 2026).
 - [ ] Optional but recommended: email `hackathon@radiant.nexus` with a one-line
   disclosure (independent personal entry, unfunded; Charlie is a minority
   shareholder in Shaka, whose public eSIM API is the planned provider). Keep
