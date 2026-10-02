@@ -2,11 +2,11 @@
 // pool's validators, keeping a buffer liquid for instant withdrawals. Staker only.
 //   CLUSTER=devnet npm -w ops run rebalance
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
-import { fetchStakePool, fetchValidatorList, increaseValidatorStakeIx, refreshIxs } from '@zero/shared'
+import { fetchStakePool, fetchValidatorList, increaseValidatorStakeIx, refreshIxs } from '@mobiloot/shared'
 import { CLUSTER, connection, loadConfig, namedKeypair, send, sol } from './lib'
 
 const config = loadConfig()
-const staker = namedKeypair('shaka-treasury')
+const staker = namedKeypair('treasury')
 let pool = await fetchStakePool(connection, new PublicKey(config.stakePool))
 const refresh = await refreshIxs(connection, pool)
 for (const ix of refresh) await send('update pool', [ix])

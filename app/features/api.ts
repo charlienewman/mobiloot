@@ -21,7 +21,7 @@ export async function api<T>(path: string, init: { method?: string; body?: unkno
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
     })
   } catch {
-    throw new ApiError(0, "Can't reach Zero right now. Check your connection.")
+    throw new ApiError(0, "Can't reach Mobiloot right now. Check your connection.")
   }
   const json = await res.json().catch(() => ({}))
   if (!res.ok) throw new ApiError(res.status, json.error ?? `Request failed (${res.status})`)
@@ -40,14 +40,14 @@ export interface Plan {
   monthlyCostUsd: number
 }
 
-export interface ZeroConfigResponse {
+export interface MobilootConfigResponse {
   cluster: 'localnet' | 'devnet' | 'mainnet-beta'
   rpcUrl: string
   stakePoolProgram: string
   stakePool: string
   poolMint: string
   treasury: string
-  zeroProgram: string
+  mobilootProgram: string
   providerMode: 'mock' | 'shaka_sandbox'
   plan: Plan
   minStakeLamports: string
@@ -61,7 +61,7 @@ export interface PoolStats {
   epoch: number
   epochProgress: number
   totalStakedLamports: string
-  zeroSolSupply: string
+  lootSolSupply: string
   exchangeRate: number
   reserveLamports: string
   lastEpochRewardsLamports: string
@@ -78,7 +78,7 @@ export interface EsimOrder {
   planCode: string
   iccidLast4: string | null
   hasActivationCode: boolean
-  /** Barred because the wallet's zeroSOL no longer covers the plan. */
+  /** Barred because the wallet's lootSOL no longer covers the plan. */
   suspended: boolean
   error: string | null
   createdAt: number

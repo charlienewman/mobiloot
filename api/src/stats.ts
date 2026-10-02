@@ -6,7 +6,7 @@ import {
   fetchValidatorList,
   poolTokensToLamports,
   validatorStakeAddress,
-} from '@zero/shared'
+} from '@mobiloot/shared'
 import { connection, stakePoolAddress } from './chain'
 import { cluster, env } from './env'
 
@@ -19,10 +19,10 @@ export interface PoolStats {
   epoch: number
   epochProgress: number
   totalStakedLamports: string
-  zeroSolSupply: string
+  lootSolSupply: string
   exchangeRate: number
   reserveLamports: string
-  /** Staking rewards the pool earned in the last completed epoch, all paid to Shaka. */
+  /** Staking rewards the pool earned in the last completed epoch, all paid to the treasury. */
   lastEpochRewardsLamports: string
   /** Annual yield implied by the last epoch's rewards, or a reference rate if unavailable. */
   apy: number
@@ -70,7 +70,7 @@ export async function poolStats(): Promise<PoolStats> {
     epoch: epochInfo.epoch,
     epochProgress: epochInfo.slotIndex / epochInfo.slotsInEpoch,
     totalStakedLamports: pool.totalLamports.toString(),
-    zeroSolSupply: pool.poolTokenSupply.toString(),
+    lootSolSupply: pool.poolTokenSupply.toString(),
     exchangeRate: pool.poolTokenSupply ? Number(pool.totalLamports) / Number(pool.poolTokenSupply) : 1,
     reserveLamports: String(await connection.getBalance(pool.reserveStake)),
     lastEpochRewardsLamports: rewards.toString(),

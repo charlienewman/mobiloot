@@ -1,5 +1,5 @@
 import { buildApp } from './app'
-import { currentPeriod, fetchEntitlement, fetchHoldings, fetchZeroConfig } from './chain'
+import { currentPeriod, fetchEntitlement, fetchHoldings, fetchMobilootConfig } from './chain'
 import { createCoverage } from './coverage'
 import { startCrank } from './crank'
 import { openDb } from './db'
@@ -15,7 +15,7 @@ const app = buildApp({
   cluster,
   signInDomain: env.SIGN_IN_DOMAIN,
   trustProxy: env.TRUST_PROXY,
-  fetchZeroConfig,
+  fetchMobilootConfig,
   currentPeriod,
   fetchEntitlement,
   fetchHoldings,
@@ -29,7 +29,7 @@ const stopCrank = startCrank(app.log)
 const coverage = createCoverage({ db, provider, fetchHoldings })
 const sweep = setInterval(async () => {
   try {
-    const config = await fetchZeroConfig()
+    const config = await fetchMobilootConfig()
     const result = await coverage.sweep(await currentPeriod(config), config.minStakeLamports)
     if (result.changed) app.log.info(result, 'coverage sweep changed line states')
   } catch (e: any) {
@@ -42,4 +42,4 @@ app.addHook('onClose', async () => {
 })
 
 await app.listen({ port: env.PORT, host: env.HOST })
-app.log.info({ cluster: cluster.cluster, provider: env.PROVIDER_MODE }, 'Zero Mobile API ready')
+app.log.info({ cluster: cluster.cluster, provider: env.PROVIDER_MODE }, 'Mobiloot API ready')

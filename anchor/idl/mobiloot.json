@@ -1,7 +1,7 @@
 {
   "address": "ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp",
   "metadata": {
-    "name": "zero_mobile",
+    "name": "mobiloot",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
@@ -333,7 +333,7 @@
     {
       "code": 6004,
       "name": "WrongMint",
-      "msg": "Token account is not zeroSOL"
+      "msg": "Token account is not lootSOL"
     },
     {
       "code": 6005,
@@ -343,7 +343,7 @@
     {
       "code": 6006,
       "name": "InsufficientStake",
-      "msg": "Not enough zeroSOL to fund this plan"
+      "msg": "Not enough lootSOL to fund this plan"
     },
     {
       "code": 6007,
@@ -428,7 +428,7 @@
           {
             "name": "plan_code",
             "docs": [
-              "Short public plan identifier, e.g. b\"zero-essentials\\0\"."
+              "Short public plan identifier, e.g. b\"loot-essentials\\0\"."
             ],
             "type": {
               "array": [
@@ -440,7 +440,7 @@
           {
             "name": "min_stake_lamports",
             "docs": [
-              "SOL value of zeroSOL a wallet must hold to activate a period."
+              "SOL value of lootSOL a wallet must hold to activate a period."
             ],
             "type": "u64"
           },
@@ -490,14 +490,14 @@
           {
             "name": "pool_tokens",
             "docs": [
-              "zeroSOL held at activation."
+              "lootSOL held at activation."
             ],
             "type": "u64"
           },
           {
             "name": "stake_lamports",
             "docs": [
-              "SOL value of that zeroSOL at activation."
+              "SOL value of that lootSOL at activation."
             ],
             "type": "u64"
           },

@@ -9,21 +9,21 @@ import {
   periodAt,
   poolTokensToLamports,
   type Entitlement,
-  type ZeroConfig,
-} from '@zero/shared'
+  type MobilootConfig,
+} from '@mobiloot/shared'
 import { cluster, rpcUrl } from './env'
 
 export const connection = new Connection(rpcUrl, 'confirmed')
-export const programId = new PublicKey(cluster.zeroProgram!)
+export const programId = new PublicKey(cluster.mobilootProgram!)
 export const stakePoolAddress = new PublicKey(cluster.stakePool)
 
-export async function fetchZeroConfig(): Promise<ZeroConfig> {
+export async function fetchMobilootConfig(): Promise<MobilootConfig> {
   const info = await connection.getAccountInfo(configAddress(programId))
-  if (!info) throw new Error('zero_mobile config not initialized')
+  if (!info) throw new Error('mobiloot config not initialized')
   return decodeConfig(Buffer.from(info.data))
 }
 
-export async function currentPeriod(config: ZeroConfig): Promise<bigint> {
+export async function currentPeriod(config: MobilootConfig): Promise<bigint> {
   // Use the cluster clock, which is what the program checks against.
   const slot = await connection.getSlot()
   const time = (await connection.getBlockTime(slot)) ?? Math.floor(Date.now() / 1000)
@@ -37,10 +37,10 @@ export async function fetchEntitlement(owner: PublicKey, period: bigint): Promis
   return decodeEntitlement(address, Buffer.from(info.data))
 }
 
-/** zeroSOL held by `owner` and its SOL value at the pool's current rate. */
+/** lootSOL held by `owner` and its SOL value at the pool's current rate. */
 export async function fetchHoldings(owner: PublicKey) {
   const pool = await fetchStakePool(connection, stakePoolAddress)
-  // Every zeroSOL account the wallet owns counts, matching what the program accepts.
+  // Every lootSOL account the wallet owns counts, matching what the program accepts.
   const { value } = await connection.getParsedTokenAccountsByOwner(owner, { mint: pool.poolMint })
   const poolTokens = value.reduce((sum, a) => sum + BigInt(a.account.data.parsed.info.tokenAmount.amount), 0n)
   return { pool, poolTokens, stakeLamports: poolTokensToLamports(pool, poolTokens) }

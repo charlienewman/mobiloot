@@ -3,7 +3,7 @@ import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
 import { PublicKey } from '@solana/web3.js'
 import Fastify, { type FastifyRequest } from 'fastify'
-import { periodBounds, type Entitlement, type ZeroConfig } from '@zero/shared'
+import { periodBounds, type Entitlement, type MobilootConfig } from '@mobiloot/shared'
 import { z } from 'zod'
 import { AuthError, createChallenge, revokeSession, sessionAddress, verifySignIn } from './auth'
 import { createCoverage } from './coverage'
@@ -23,12 +23,12 @@ export interface Deps {
     stakePool: string
     poolMint: string
     treasury: string
-    zeroProgram?: string
+    mobilootProgram?: string
   }
   signInDomain: string
   trustProxy?: boolean
-  fetchZeroConfig(): Promise<ZeroConfig>
-  currentPeriod(config: ZeroConfig): Promise<bigint>
+  fetchMobilootConfig(): Promise<MobilootConfig>
+  currentPeriod(config: MobilootConfig): Promise<bigint>
   fetchEntitlement(owner: PublicKey, period: bigint): Promise<Entitlement | undefined>
   fetchHoldings(owner: PublicKey): Promise<{ poolTokens: bigint; stakeLamports: bigint }>
   poolStats(): Promise<PoolStats>
@@ -83,7 +83,7 @@ export function buildApp(deps: Deps) {
     }))
 
     app.get('/v1/config', async () => {
-      const config = await deps.fetchZeroConfig()
+      const config = await deps.fetchMobilootConfig()
       const period = await deps.currentPeriod(config)
       const plan = planByCode(config.planCode) ?? PLANS[0]
       return {
@@ -93,7 +93,7 @@ export function buildApp(deps: Deps) {
         stakePool: deps.cluster.stakePool,
         poolMint: deps.cluster.poolMint,
         treasury: deps.cluster.treasury,
-        zeroProgram: deps.cluster.zeroProgram,
+        mobilootProgram: deps.cluster.mobilootProgram,
         providerMode: provider.mode,
         plan,
         minStakeLamports: config.minStakeLamports.toString(),
@@ -134,7 +134,7 @@ export function buildApp(deps: Deps) {
     /** Everything the Home screen needs in one round trip. */
     app.get('/v1/me', async (req) => {
       const owner = requireWallet(req)
-      const config = await deps.fetchZeroConfig()
+      const config = await deps.fetchMobilootConfig()
       const period = await deps.currentPeriod(config)
       const [entitlement, holdings] = await Promise.all([
         deps.fetchEntitlement(owner, period),
@@ -166,14 +166,14 @@ export function buildApp(deps: Deps) {
      */
     app.post('/v1/esim', strict, async (req) => {
       const owner = requireWallet(req)
-      const config = await deps.fetchZeroConfig()
+      const config = await deps.fetchMobilootConfig()
       const period = await deps.currentPeriod(config)
       const entitlement = await deps.fetchEntitlement(owner, period)
       if (!entitlement || !entitlement.owner.equals(owner))
         throw new HttpError(403, 'No active plan for this period. Activate it first.')
       const holdings = await deps.fetchHoldings(owner)
       if (holdings.stakeLamports < config.minStakeLamports)
-        throw new HttpError(403, 'Your zeroSOL balance no longer covers the plan.')
+        throw new HttpError(403, 'Your lootSOL balance no longer covers the plan.')
 
       const address = owner.toBase58()
       const existing = findOrder(address, period)
@@ -227,7 +227,7 @@ export function buildApp(deps: Deps) {
     /** Returns the secret activation code. Only on explicit request, never logged. */
     app.post('/v1/esim/reveal', strict, async (req) => {
       const owner = requireWallet(req)
-      const config = await deps.fetchZeroConfig()
+      const config = await deps.fetchMobilootConfig()
       const order = await coveredOrder(owner, config)
       if (!order?.activation_code) throw new HttpError(404, 'No eSIM ready yet')
       return {
@@ -238,7 +238,7 @@ export function buildApp(deps: Deps) {
 
     app.get('/v1/usage', async (req) => {
       const owner = requireWallet(req)
-      const config = await deps.fetchZeroConfig()
+      const config = await deps.fetchMobilootConfig()
       const order = await coveredOrder(owner, config)
       if (!order?.provider_order_id || order.status !== 'ready') throw new HttpError(404, 'No active eSIM')
       const plan = planByCode(order.plan_code) ?? PLANS[0]
@@ -247,12 +247,12 @@ export function buildApp(deps: Deps) {
   })
 
   /** The caller's current order after re-checking coverage; refuses suspended lines. */
-  async function coveredOrder(owner: PublicKey, config: ZeroConfig) {
+  async function coveredOrder(owner: PublicKey, config: MobilootConfig) {
     const order = findOrder(owner.toBase58(), await deps.currentPeriod(config))
     if (!order) return undefined
     const { stakeLamports } = await deps.fetchHoldings(owner)
     const checked = await coverage.apply(order, stakeLamports, config.minStakeLamports)
-    if (checked.suspended_at) throw new HttpError(403, 'Line suspended: your zeroSOL no longer covers the plan.')
+    if (checked.suspended_at) throw new HttpError(403, 'Line suspended: your lootSOL no longer covers the plan.')
     return checked
   }
 

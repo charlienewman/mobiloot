@@ -6,10 +6,10 @@
    │
    ├──► Solana ────────────────────────────────────────────────────────────┐
    │     • SPL stake pool (Sanctum SP12t…): DepositSol / WithdrawSol       │
-   │       zeroSOL mint, 100% epoch fee → Shaka treasury                   │
-   │     • zero_mobile program: activate(period) → Entitlement PDA         │
+   │       lootSOL mint, 100% epoch fee → Mobiloot treasury                   │
+   │     • mobiloot program: activate(period) → Entitlement PDA         │
    │                                                                       │
-   └──► Zero API (Fastify, SQLite) ◄──── reads program + pool accounts ────┘
+   └──► Mobiloot API (Fastify, SQLite) ◄──── reads program + pool accounts ────┘
           • SIWS sessions
           • verifies entitlement + holdings → orders eSIM (idempotent)
           • pool stats, Pyth SOL price, epoch crank
@@ -21,8 +21,8 @@
 | Path | What |
 | --- | --- |
 | `app/` | Android app. Screens in `app/app`, data/transactions in `app/features`. |
-| `anchor/` | `zero_mobile` Anchor program; committed IDL in `anchor/idl`. |
-| `shared/` | Dependency-light TypeScript used by the app, API and scripts: a program-id-aware stake pool client and the `zero_mobile` client. |
+| `anchor/` | `mobiloot` Anchor program; committed IDL in `anchor/idl`. |
+| `shared/` | Dependency-light TypeScript used by the app, API and scripts: a program-id-aware stake pool client and the `mobiloot` client. |
 | `api/` | Backend. `src/app.ts` routes, `src/auth.ts` SIWS, `src/provider/` telecom adapters. |
 | `ops/` | Pool setup, program config setup, epoch crank, status. |
 | `config/` | Public per-cluster addresses written by the setup scripts. |
@@ -31,7 +31,7 @@
 ## Decisions
 
 - **No custody code.** Deposits and withdrawals use the SPL stake pool program
-  as-is. Zero's own program only reads balances and records entitlements, which
+  as-is. Mobiloot's own program only reads balances and records entitlements, which
   keeps the audit surface small.
 - **Sanctum's SPL deployment, not SPoo1, on devnet.** The official SPoo1
   deployment on devnet predates the 1 SOL minimum delegation and can no longer
@@ -46,7 +46,7 @@
 - **One wallet handoff to connect.** The app sends the server's SIWS fields in
   MWA `authorize`, so connecting also signs the user in.
 - **Simulate before signing.** Transactions are simulated before the wallet
-  opens, so program errors ("not enough zeroSOL") show in-app rather than as a
+  opens, so program errors ("not enough lootSOL") show in-app rather than as a
   failed wallet prompt.
 - **Honesty as UI.** Network and provider chips are permanent, and yield and
   price sources are labelled.

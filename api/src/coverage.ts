@@ -1,4 +1,4 @@
-// Continuous coverage enforcement. An entitlement proves the wallet held enough zeroSOL
+// Continuous coverage enforcement. An entitlement proves the wallet held enough lootSOL
 // when it activated; this makes sure it *keeps* holding it. Without it, one stake could
 // be passed wallet to wallet to back several lines in the same period. Each check
 // suspends a line whose wallet no longer covers the plan and resumes it once it does,

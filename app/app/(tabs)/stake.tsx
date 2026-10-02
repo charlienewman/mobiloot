@@ -4,17 +4,17 @@ import { Header } from '@/components/header'
 import { TxSheet } from '@/components/tx-sheet'
 import { Button, Card, Divider, KeyValue, Notice, Row, Screen, Stack, Text } from '@/components/ui'
 import { colors, radius, space } from '@/constants/theme'
-import { useZero } from '@/features/config'
+import { useMobiloot } from '@/features/config'
 import { useFunding, useMe, usePool, useSolBalance } from '@/features/data'
 import { pct, sol, usd } from '@/features/format'
 import { useTransactions } from '@/features/transactions'
 
 type Mode = 'stake' | 'withdraw'
-// Leaves room for the zeroSOL token account's rent and network fees.
+// Leaves room for the lootSOL token account's rent and network fees.
 const FEE_BUFFER = 10_000_000
 
 export default function Stake() {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const [mode, setMode] = useState<Mode>('stake')
   const [amount, setAmount] = useState('')
   const me = useMe()
@@ -61,7 +61,7 @@ export default function Stake() {
             {mode === 'stake' ? 'You stake' : 'You redeem'}
           </Text>
           <Text variant="small" color={colors.textMuted}>
-            {mode === 'stake' ? `Wallet: ${sol(walletLamports)} SOL` : `Held: ${sol(heldTokens, 4)} zeroSOL`}
+            {mode === 'stake' ? `Wallet: ${sol(walletLamports)} SOL` : `Held: ${sol(heldTokens, 4)} lootSOL`}
           </Text>
         </Row>
         <Row>
@@ -71,7 +71,7 @@ export default function Stake() {
             placeholder="0.0"
             placeholderTextColor={colors.textFaint}
             keyboardType="decimal-pad"
-            accessibilityLabel={mode === 'stake' ? 'Amount of SOL to stake' : 'Amount of zeroSOL to redeem'}
+            accessibilityLabel={mode === 'stake' ? 'Amount of SOL to stake' : 'Amount of lootSOL to redeem'}
             style={{
               flex: 1,
               color: colors.text,
@@ -82,7 +82,7 @@ export default function Stake() {
             }}
           />
           <Text variant="title" color={colors.textMuted}>
-            {mode === 'stake' ? 'SOL' : 'zeroSOL'}
+            {mode === 'stake' ? 'SOL' : 'lootSOL'}
           </Text>
         </Row>
         <Row gap={space.sm}>
@@ -107,8 +107,8 @@ export default function Stake() {
         />
         {mode === 'stake' ? (
           <Text variant="small" color={colors.textMuted}>
-            You receive about {sol(lamports / rate, 4)} zeroSOL. Your principal stays redeemable, and the staking
-            rewards go to Shaka to pay for your plan.
+            You receive about {sol(lamports / rate, 4)} lootSOL. Your principal stays redeemable, and the staking
+            rewards go to the treasury to pay for your plan.
           </Text>
         ) : (
           <Text variant="small" color={colors.textMuted}>
@@ -119,7 +119,7 @@ export default function Stake() {
 
       {mode === 'withdraw' && active && afterLamports < min && lamports > 0 ? (
         <Notice tone="warn">
-          Below {sol(min)} zeroSOL your line pauses until you stake back up, and the plan won&apos;t renew.
+          Below {sol(min)} lootSOL your line pauses until you stake back up, and the plan won&apos;t renew.
         </Notice>
       ) : null}
       {reserveShort && lamports > 0 ? (
@@ -146,14 +146,14 @@ export default function Stake() {
           {now.fullStakeSol.toFixed(1)} SOL
         </Text>
         <Text variant="small" color={colors.textMuted}>
-          {config.plan.name} costs Shaka about {usd(config.plan.monthlyCostUsd, 0)} a month. At {pct(now.apy, 1)} yield
-          ({now.apySource === 'measured' ? 'measured' : 'mainnet reference'}) and SOL at {usd(now.solUsd, 0)} (
+          {config.plan.name} costs Mobiloot about {usd(config.plan.monthlyCostUsd, 0)} a month. At {pct(now.apy, 1)}{' '}
+          yield ({now.apySource === 'measured' ? 'measured' : 'mainnet reference'}) and SOL at {usd(now.solUsd, 0)} (
           {now.priceSource === 'pyth' ? 'Pyth' : 'estimate'}), that stake&apos;s rewards cover the plan. These are
           estimates, not guarantees: yield and SOL&apos;s price both move.
         </Text>
         <Divider />
         <Text variant="small" color={colors.textMuted}>
-          Staking carries risk, including validator downtime and smart-contract risk. zeroSOL is always redeemable for
+          Staking carries risk, including validator downtime and smart-contract risk. lootSOL is always redeemable for
           its share of the pool.
         </Text>
       </Card>
@@ -163,7 +163,7 @@ export default function Stake() {
         onClose={tx.reset}
         successNote={
           tx.state.kind === 'deposit'
-            ? 'Your zeroSOL is in your wallet. Its rewards now go towards your plan.'
+            ? 'Your lootSOL is in your wallet. Its rewards now go towards your plan.'
             : 'Your SOL is back in your wallet.'
         }
       />

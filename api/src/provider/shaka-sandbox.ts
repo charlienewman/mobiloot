@@ -1,6 +1,6 @@
 // Shaka sandbox adapter. Deliberately unimplemented: endpoint paths, auth scheme and
 // payload fields must come from Shaka's sandbox documentation rather than be guessed.
-// See docs/shaka-sandbox.md for the contract this adapter has to satisfy.
+// See docs/esim-provider.md for the contract this adapter has to satisfy.
 import type { CreateOrderInput, MobileProvider, ProviderOrder, Usage } from './types'
 
 export class ShakaSandboxProvider implements MobileProvider {
@@ -26,6 +26,6 @@ export class ShakaSandboxProvider implements MobileProvider {
 
 class NotWired extends Error {
   constructor(method: string) {
-    super(`ShakaSandboxProvider.${method} is not wired to the sandbox API yet (docs/shaka-sandbox.md)`)
+    super(`ShakaSandboxProvider.${method} is not wired to the sandbox API yet (docs/esim-provider.md)`)
   }
 }

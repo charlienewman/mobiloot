@@ -10,7 +10,7 @@ import { Header } from '@/components/header'
 import { Button, Card, Chip, Divider, KeyValue, Row, Screen, Stack, Text } from '@/components/ui'
 import { API_URL } from '@/constants/env'
 import { colors, space } from '@/constants/theme'
-import { useZero } from '@/features/config'
+import { useMobiloot } from '@/features/config'
 import { useMe, useSolBalance } from '@/features/data'
 import { shortAddress, sol } from '@/features/format'
 import { useSession } from '@/features/session'
@@ -20,7 +20,7 @@ const isSeeker = Platform.OS === 'android' && /seeker/i.test(String((Platform.co
 
 export default function Account() {
   const { address, disconnect } = useSession()
-  const { config, explorer } = useZero()
+  const { config, explorer } = useMobiloot()
   const balance = useSolBalance()
   const me = useMe()
   const router = useRouter()
@@ -56,21 +56,21 @@ export default function Account() {
           </Row>
         </Pressable>
         <KeyValue label="SOL balance" value={balance.data !== undefined ? `${sol(balance.data)} SOL` : '…'} />
-        <KeyValue label="zeroSOL" value={me.data ? sol(me.data.holdings.poolTokens, 4) : '…'} />
+        <KeyValue label="lootSOL" value={me.data ? sol(me.data.holdings.poolTokens, 4) : '…'} />
         <Button title="View wallet on Explorer" kind="ghost" onPress={() => open(`address/${address}`)} />
       </Card>
 
       <Card>
         <Text variant="heading">Learn</Text>
-        <LinkRow icon="help-circle" label="How Zero works" onPress={() => router.push('/how-it-works')} />
+        <LinkRow icon="help-circle" label="How Mobiloot works" onPress={() => router.push('/how-it-works')} />
         <Divider />
-        <LinkRow icon="layers" label="zeroSOL stake pool" onPress={() => open(`address/${config.stakePool}`)} />
+        <LinkRow icon="layers" label="lootSOL stake pool" onPress={() => open(`address/${config.stakePool}`)} />
         <Divider />
-        <LinkRow icon="code" label="Zero Mobile program" onPress={() => open(`address/${config.zeroProgram}`)} />
+        <LinkRow icon="code" label="Mobiloot program" onPress={() => open(`address/${config.mobilootProgram}`)} />
         <Divider />
         <LinkRow
           icon="briefcase"
-          label="Shaka treasury (where yield goes)"
+          label="Treasury (where yield goes)"
           onPress={() => open(`address/${config.treasury}`)}
         />
       </Card>
@@ -82,14 +82,14 @@ export default function Account() {
         <KeyValue label="RPC" value={config.rpcUrl.replace(/^https?:\/\//, '')} mono />
         <KeyValue label="API" value={API_URL.replace(/^https?:\/\//, '')} mono />
         <KeyValue label="eSIM provider" value={config.providerMode === 'mock' ? 'Mock (demo)' : 'Shaka sandbox'} />
-        <KeyValue label="Program" value={shortAddress(config.zeroProgram, 6)} mono />
+        <KeyValue label="Program" value={shortAddress(config.mobilootProgram, 6)} mono />
         <KeyValue label="Stake pool" value={shortAddress(config.stakePool, 6)} mono />
       </Card>
 
       <Stack gap={space.sm}>
         <Button title="Disconnect wallet" kind="danger" onPress={disconnect} />
         <Text variant="small" color={colors.textFaint} style={{ textAlign: 'center' }}>
-          Zero never asks for your seed phrase. Your zeroSOL stays in your wallet.
+          Mobiloot never asks for your seed phrase. Your lootSOL stays in your wallet.
         </Text>
       </Stack>
     </Screen>

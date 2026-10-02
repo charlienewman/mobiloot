@@ -1,8 +1,8 @@
 // Keeps the pool updated each epoch. Anyone can do this; the API does it so deposits
-// never hit a stale pool and rewards reach the Shaka treasury promptly.
+// never hit a stale pool and rewards reach the Mobiloot treasury promptly.
 import fs from 'node:fs'
 import { Keypair, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
-import { fetchStakePool, fetchValidatorList, updateIxs } from '@zero/shared'
+import { fetchStakePool, fetchValidatorList, updateIxs } from '@mobiloot/shared'
 import { connection, stakePoolAddress } from './chain'
 import { crankKeypairPath } from './env'
 

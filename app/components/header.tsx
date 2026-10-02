@@ -1,5 +1,5 @@
 import { View } from 'react-native'
-import { useZero } from '@/features/config'
+import { useMobiloot } from '@/features/config'
 import { colors, space } from '@/constants/theme'
 import { Wordmark } from './brand'
 import { Chip } from './ui'
@@ -9,7 +9,7 @@ import { Chip } from './ui'
  * test-network value or a mock eSIM for the real thing.
  */
 export function Header() {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const network = config.cluster === 'mainnet-beta' ? null : config.cluster === 'devnet' ? 'Devnet' : 'Localnet'
   return (
     <View
@@ -26,7 +26,7 @@ export function Header() {
       <Wordmark size={20} />
       <View style={{ flexDirection: 'row', gap: 6 }}>
         {network ? <Chip label={network} tone="warn" /> : null}
-        <Chip label={config.providerMode === 'mock' ? 'Mock eSIM' : 'Shaka sandbox'} tone="info" />
+        <Chip label={config.providerMode === 'mock' ? 'Mock eSIM' : 'Sandbox eSIM'} tone="info" />
       </View>
     </View>
   )

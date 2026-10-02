@@ -1,5 +1,5 @@
 {
-  "name": "@zero/shared",
+  "name": "@mobiloot/shared",
   "private": true,
   "type": "module",
   "main": "index.ts",

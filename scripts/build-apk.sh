@@ -9,11 +9,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export JAVA_HOME="${JAVA_HOME:-$(ls -d "$HOME"/.local/jdks/jdk-17* 2>/dev/null | head -1)}"
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}" PATH="$JAVA_HOME/bin:$PATH"
 KS="$ROOT/keys/release.keystore"
-: "${ZERO_KEYSTORE_PASSWORD:?set ZERO_KEYSTORE_PASSWORD (used to create or unlock keys/release.keystore)}"
+: "${MOBILOOT_KEYSTORE_PASSWORD:?set MOBILOOT_KEYSTORE_PASSWORD (used to create or unlock keys/release.keystore)}"
 if [[ ! -f "$KS" ]]; then
   mkdir -p "$ROOT/keys"
-  keytool -genkeypair -v -keystore "$KS" -alias zero -keyalg RSA -keysize 2048 -validity 10000 \
-    -storepass "$ZERO_KEYSTORE_PASSWORD" -keypass "$ZERO_KEYSTORE_PASSWORD" -dname "CN=Zero Mobile, O=Shaka, C=GB"
+  keytool -genkeypair -v -keystore "$KS" -alias mobiloot -keyalg RSA -keysize 2048 -validity 10000 \
+    -storepass "$MOBILOOT_KEYSTORE_PASSWORD" -keypass "$MOBILOOT_KEYSTORE_PASSWORD" -dname "CN=Mobiloot, O=Charlie Newman, C=GB"
   echo "Created $KS. Back it up now."
 fi
 cd "$ROOT/app"
@@ -22,11 +22,11 @@ cd android
 ./gradlew assembleRelease -q
 APK=app/build/outputs/apk/release/app-release-unsigned.apk
 [[ -f $APK ]] || APK=app/build/outputs/apk/release/app-release.apk
-OUT="$ROOT/dist/zero-mobile-$(node -p "require('$ROOT/app/app.json').expo.version").apk"
+OUT="$ROOT/dist/mobiloot-$(node -p "require('$ROOT/app/app.json').expo.version").apk"
 mkdir -p "$ROOT/dist"
 "$ANDROID_HOME"/build-tools/*/zipalign -f -p 4 "$APK" "$OUT.aligned"
-"$(ls -d "$ANDROID_HOME"/build-tools/* | tail -1)"/apksigner sign --ks "$KS" --ks-key-alias zero \
-  --ks-pass env:ZERO_KEYSTORE_PASSWORD --key-pass env:ZERO_KEYSTORE_PASSWORD --out "$OUT" "$OUT.aligned"
+"$(ls -d "$ANDROID_HOME"/build-tools/* | tail -1)"/apksigner sign --ks "$KS" --ks-key-alias mobiloot \
+  --ks-pass env:MOBILOOT_KEYSTORE_PASSWORD --key-pass env:MOBILOOT_KEYSTORE_PASSWORD --out "$OUT" "$OUT.aligned"
 rm "$OUT.aligned"
 "$(ls -d "$ANDROID_HOME"/build-tools/* | tail -1)"/apksigner verify --print-certs "$OUT" | head -3
 sha256sum "$OUT"

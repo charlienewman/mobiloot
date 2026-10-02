@@ -1,4 +1,4 @@
-// Boundary between Zero Mobile and a telecom provider. Provider-specific payloads are
+// Boundary between Mobiloot and a telecom provider. Provider-specific payloads are
 // mapped to these shapes inside each adapter and never leak further into the app.
 export interface CreateOrderInput {
   planCode: string

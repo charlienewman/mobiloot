@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { PublicKey } from '@solana/web3.js'
 import { api, ApiError, type Me, type PoolStats, type Usage } from './api'
-import { useZero } from './config'
+import { useMobiloot } from './config'
 import { useSession } from './session'
 
 function useAuthed<T>(key: string, path: string, opts: { enabled?: boolean; refetchInterval?: number } = {}) {
@@ -32,7 +32,7 @@ export function usePool() {
 }
 
 export function useSolBalance() {
-  const { connection } = useZero()
+  const { connection } = useMobiloot()
   const { address } = useSession()
   return useQuery({
     queryKey: ['balance', address],
@@ -47,7 +47,7 @@ export function useSolBalance() {
  * user's stake covers at the pool's yield, and how much stake would cover all of it.
  */
 export function useFunding(stakeLamports: number) {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const pool = usePool()
   const apy = pool.data?.apy ?? 0.068
   const solUsd = config.solUsd.usd

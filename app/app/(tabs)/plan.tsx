@@ -7,20 +7,20 @@ import { useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Animated, Linking, Pressable, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
-import { ZeroMark } from '@/components/brand'
+import { BrandMark } from '@/components/brand'
 import { Header } from '@/components/header'
 import { TxSheet } from '@/components/tx-sheet'
 import { Button, Card, Chip, Divider, KeyValue, Notice, ProgressBar, Row, Screen, Stack, Text } from '@/components/ui'
 import { colors, radius, space } from '@/constants/theme'
 import { api, type EsimOrder, type RevealedEsim } from '@/features/api'
-import { useZero } from '@/features/config'
+import { useMobiloot } from '@/features/config'
 import { useMe, useUsage } from '@/features/data'
 import { daysUntil, mb, sol } from '@/features/format'
 import { useSession } from '@/features/session'
 import { useTransactions } from '@/features/transactions'
 
 export default function Plan() {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const me = useMe()
   const tx = useTransactions()
   const router = useRouter()
@@ -58,7 +58,7 @@ export default function Plan() {
             <Text variant="heading">Locked</Text>
             <ProgressBar value={stake / min} />
             <Text color={colors.textMuted}>
-              Hold at least {sol(min)} zeroSOL to activate. You have {sol(stake)}.
+              Hold at least {sol(min)} lootSOL to activate. You have {sol(stake)}.
             </Text>
             <Button title="Stake SOL" kind="secondary" onPress={() => router.push('/(tabs)/stake')} />
           </Card>
@@ -79,7 +79,7 @@ export default function Plan() {
 }
 
 function PlanDetails() {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const p = config.plan
   return (
     <Card tone="raised">
@@ -90,7 +90,7 @@ function PlanDetails() {
             {p.tagline}
           </Text>
         </Stack>
-        <ZeroMark size={36} />
+        <BrandMark size={36} />
       </Row>
       <Row gap={space.xl}>
         <Feature icon="wifi" label={`${p.dataGb} GB`} />
@@ -98,7 +98,7 @@ function PlanDetails() {
         <Feature icon="message-square" label={p.texts === 'unlimited' ? 'Unlimited' : `${p.texts}`} />
       </Row>
       <Text variant="small" color={colors.textMuted}>
-        {p.coverage} · on the {p.network} network · no card, no contract
+        {p.coverage} · no card, no contract
       </Text>
     </Card>
   )
@@ -115,7 +115,7 @@ function Feature({ icon, label }: { icon: React.ComponentProps<typeof Feather>['
 
 function Provisioning({ entitlementAddress, order }: { entitlementAddress: string; order?: EsimOrder }) {
   const { token } = useSession()
-  const { explorer, config } = useZero()
+  const { explorer, config } = useMobiloot()
   const queryClient = useQueryClient()
   const provision = useMutation({
     mutationFn: () => api<EsimOrder>('/v1/esim', { method: 'POST', token }),
@@ -128,7 +128,7 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
   const steps = [
     { label: 'Plan entitlement confirmed on Solana', done: true },
     {
-      label: config.providerMode === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered from Shaka',
+      label: config.providerMode === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered',
       done: false,
       active: provision.isPending,
     },
@@ -180,7 +180,7 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
 }
 
 function EsimReady({ order }: { order: EsimOrder }) {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const { token } = useSession()
   const usage = useUsage(!order.suspended)
   const [revealed, setRevealed] = useState<RevealedEsim | null>(null)
@@ -219,7 +219,7 @@ function EsimReady({ order }: { order: EsimOrder }) {
               {config.plan.name}
             </Text>
             <Text variant="label" color={colors.limeInk}>
-              {order.providerMode === 'mock' ? 'Mock eSIM' : 'Shaka eSIM'}
+              {order.providerMode === 'mock' ? 'Mock eSIM' : 'eSIM'}
             </Text>
           </Row>
           <View style={styles.chip} />
@@ -233,7 +233,7 @@ function EsimReady({ order }: { order: EsimOrder }) {
               </Text>
             </Stack>
             <Text variant="heading" color={colors.limeInk}>
-              Zero
+              Mobiloot
             </Text>
           </Row>
         </View>
@@ -241,7 +241,7 @@ function EsimReady({ order }: { order: EsimOrder }) {
 
       {order.suspended ? (
         <Notice tone="danger">
-          Line suspended: your wallet no longer holds enough zeroSOL to cover the plan. Stake back up and it resumes
+          Line suspended: your wallet no longer holds enough lootSOL to cover the plan. Stake back up and it resumes
           automatically.
         </Notice>
       ) : null}
@@ -255,7 +255,7 @@ function EsimReady({ order }: { order: EsimOrder }) {
           <Text color={colors.textMuted}>
             2. Pick &quot;Enter code manually&quot; and paste the activation code, or scan the QR from another screen.
           </Text>
-          <Text color={colors.textMuted}>3. Turn on the Zero line for mobile data.</Text>
+          <Text color={colors.textMuted}>3. Turn on the Mobiloot line for mobile data.</Text>
         </Stack>
         {order.providerMode === 'mock' ? (
           <Notice tone="info">

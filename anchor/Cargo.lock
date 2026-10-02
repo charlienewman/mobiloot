@@ -928,6 +928,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mobiloot"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2851,14 +2859,6 @@ name = "winnow"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b97319f7b8343df12cc98938e5c3eb436064524c8d2b4e30a1d3a36eecdf81"
-
-[[package]]
-name = "zero_mobile"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
-]
 
 [[package]]
 name = "zerocopy"

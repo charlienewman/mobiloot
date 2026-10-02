@@ -1,4 +1,4 @@
-// The plan catalogue. `code` must match the zero_mobile program's configured plan code.
+// The plan catalogue. `code` must match the mobiloot program's configured plan code.
 // Costs are illustrative wholesale assumptions used for the funding maths, not prices.
 export interface Plan {
   code: string
@@ -8,21 +8,19 @@ export interface Plan {
   minutes: 'unlimited' | number
   texts: 'unlimited' | number
   coverage: string
-  network: string
   /** Assumed monthly wholesale cost the pool's yield has to cover. */
   monthlyCostUsd: number
 }
 
 export const PLANS: Plan[] = [
   {
-    code: 'zero-essentials',
-    name: 'Zero Essentials',
+    code: 'loot-essentials',
+    name: 'Mobiloot Essentials',
     tagline: 'Everyday data, calls and texts. Paid for by your stake.',
     dataGb: 10,
     minutes: 'unlimited',
     texts: 'unlimited',
     coverage: 'UK, with EU roaming',
-    network: 'Shaka',
     monthlyCostUsd: 6,
   },
 ]

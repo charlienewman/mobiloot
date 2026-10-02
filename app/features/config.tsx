@@ -6,34 +6,34 @@ import { Connection, PublicKey } from '@solana/web3.js'
 import { MobileWalletProvider } from '@wallet-ui/react-native-web3js'
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
-import { ZeroMark } from '@/components/brand'
+import { BrandMark } from '@/components/brand'
 import { Button, Text } from '@/components/ui'
 import { APP_IDENTITY } from '@/constants/env'
 import { colors, space } from '@/constants/theme'
-import { api, type ZeroConfigResponse } from './api'
+import { api, type MobilootConfigResponse } from './api'
 
-const CACHE_KEY = 'zero.config.v1'
+const CACHE_KEY = 'mobiloot.config.v1'
 
-export interface ZeroContext {
-  config: ZeroConfigResponse
+export interface MobilootContext {
+  config: MobilootConfigResponse
   connection: Connection
   stakePool: PublicKey
-  zeroProgram: PublicKey
+  mobilootProgram: PublicKey
   /** MWA chain id; localnet borrows devnet's so test wallets accept it. */
   chain: 'solana:devnet' | 'solana:mainnet'
   explorer(path: string): string
 }
 
-const Ctx = createContext<ZeroContext | null>(null)
+const Ctx = createContext<MobilootContext | null>(null)
 
-export function useZero(): ZeroContext {
+export function useMobiloot(): MobilootContext {
   const v = useContext(Ctx)
-  if (!v) throw new Error('useZero outside ZeroConfigProvider')
+  if (!v) throw new Error('useMobiloot outside MobilootConfigProvider')
   return v
 }
 
-export function ZeroConfigProvider({ children }: { children: ReactNode }) {
-  const [cached, setCached] = useState<ZeroConfigResponse | null | undefined>(undefined)
+export function MobilootConfigProvider({ children }: { children: ReactNode }) {
+  const [cached, setCached] = useState<MobilootConfigResponse | null | undefined>(undefined)
   useEffect(() => {
     AsyncStorage.getItem(CACHE_KEY)
       .then((v) => setCached(v ? JSON.parse(v) : null))
@@ -43,7 +43,7 @@ export function ZeroConfigProvider({ children }: { children: ReactNode }) {
   const query = useQuery({
     queryKey: ['config'],
     queryFn: async () => {
-      const c = await api<ZeroConfigResponse>('/v1/config')
+      const c = await api<MobilootConfigResponse>('/v1/config')
       void AsyncStorage.setItem(CACHE_KEY, JSON.stringify(c)).catch(() => {})
       return c
     },
@@ -52,7 +52,7 @@ export function ZeroConfigProvider({ children }: { children: ReactNode }) {
   })
   const config = query.data ?? cached ?? undefined
 
-  const value = useMemo<ZeroContext | null>(() => {
+  const value = useMemo<MobilootContext | null>(() => {
     if (!config) return null
     const custom =
       config.cluster === 'localnet'
@@ -64,7 +64,7 @@ export function ZeroConfigProvider({ children }: { children: ReactNode }) {
       config,
       connection: new Connection(config.rpcUrl, 'confirmed'),
       stakePool: new PublicKey(config.stakePool),
-      zeroProgram: new PublicKey(config.zeroProgram),
+      mobilootProgram: new PublicKey(config.mobilootProgram),
       chain: config.cluster === 'mainnet-beta' ? 'solana:mainnet' : 'solana:devnet',
       explorer: (path: string) => `https://explorer.solana.com/${path}${custom}`,
     }
@@ -82,11 +82,11 @@ export function ZeroConfigProvider({ children }: { children: ReactNode }) {
           padding: space.xl,
         }}
       >
-        <ZeroMark size={72} />
+        <BrandMark size={72} />
         {query.isError && cached === null ? (
           <>
             <Text variant="body" color={colors.textMuted} style={{ textAlign: 'center' }}>
-              Can&apos;t reach Zero right now. Check your connection and try again.
+              Can&apos;t reach Mobiloot right now. Check your connection and try again.
             </Text>
             <Button title="Try again" kind="secondary" onPress={() => query.refetch()} />
           </>

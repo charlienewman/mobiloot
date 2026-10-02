@@ -1,13 +1,13 @@
-//! Zero Mobile entitlement program.
+//! Mobiloot entitlement program.
 //!
-//! A wallet that holds enough zeroSOL (the Shaka stake pool token) can activate a
+//! A wallet that holds enough lootSOL (the Mobiloot stake pool token) can activate a
 //! mobile-plan entitlement for the current billing period. The stake pool pays 100%
-//! of its staking rewards to the Shaka treasury, so holding zeroSOL is how the user
+//! of its staking rewards to the Mobiloot treasury, so holding lootSOL is how the user
 //! pays for the plan, while their principal stays redeemable in their own wallet.
 //!
 //! The program never takes custody of anything. It reads the holder's token account
 //! and the stake pool's exchange rate, then records a per-period entitlement that
-//! Shaka's backend checks before provisioning or renewing service. No personal or
+//! The Mobiloot API checks before provisioning or renewing service. No personal or
 //! telecom data is ever written on-chain.
 use anchor_lang::prelude::*;
 use anchor_spl::token::TokenAccount;
@@ -27,7 +27,7 @@ mod stake_pool_layout {
 }
 
 #[program]
-pub mod zero_mobile {
+pub mod mobiloot {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>, params: ConfigParams) -> Result<()> {
@@ -51,17 +51,17 @@ pub mod zero_mobile {
     /// Activates the plan for `period`, which must be the current billing period.
     pub fn activate(ctx: Context<Activate>, period: u64) -> Result<()> {
         let config = &ctx.accounts.config;
-        require!(!config.paused, ZeroError::Paused);
+        require!(!config.paused, MobilootError::Paused);
         let now = Clock::get()?.unix_timestamp;
-        require_eq!(period, config.period_at(now)?, ZeroError::WrongPeriod);
+        require_eq!(period, config.period_at(now)?, MobilootError::WrongPeriod);
 
         let pool = read_pool(&ctx.accounts.stake_pool)?;
-        require_keys_eq!(pool.mint, config.pool_mint, ZeroError::WrongStakePool);
+        require_keys_eq!(pool.mint, config.pool_mint, MobilootError::WrongStakePool);
         // A pool not yet updated this epoch has a stale exchange rate.
-        require_eq!(pool.last_update_epoch, Clock::get()?.epoch, ZeroError::StalePool);
+        require_eq!(pool.last_update_epoch, Clock::get()?.epoch, MobilootError::StalePool);
         let pool_tokens = ctx.accounts.holder_tokens.amount;
         let stake_lamports = pool.lamports_for(pool_tokens)?;
-        require!(stake_lamports >= config.min_stake_lamports, ZeroError::InsufficientStake);
+        require!(stake_lamports >= config.min_stake_lamports, MobilootError::InsufficientStake);
 
         let entitlement = &mut ctx.accounts.entitlement;
         entitlement.owner = ctx.accounts.owner.key();
@@ -86,7 +86,7 @@ pub mod zero_mobile {
         let now = Clock::get()?.unix_timestamp;
         require!(
             ctx.accounts.entitlement.period < ctx.accounts.config.period_at(now)?,
-            ZeroError::PeriodNotOver
+            MobilootError::PeriodNotOver
         );
         Ok(())
     }
@@ -94,9 +94,9 @@ pub mod zero_mobile {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct ConfigParams {
-    /// Short public plan identifier, e.g. b"zero-essentials\0".
+    /// Short public plan identifier, e.g. b"loot-essentials\0".
     pub plan_code: [u8; 16],
-    /// SOL value of zeroSOL a wallet must hold to activate a period.
+    /// SOL value of lootSOL a wallet must hold to activate a period.
     pub min_stake_lamports: u64,
     /// Length of one billing period.
     pub period_seconds: u32,
@@ -107,8 +107,8 @@ pub struct ConfigParams {
 
 impl ConfigParams {
     fn validate(&self) -> Result<()> {
-        require!(self.period_seconds >= 60, ZeroError::InvalidConfig);
-        require!(self.min_stake_lamports > 0, ZeroError::InvalidConfig);
+        require!(self.period_seconds >= 60, MobilootError::InvalidConfig);
+        require!(self.min_stake_lamports > 0, MobilootError::InvalidConfig);
         Ok(())
     }
 }
@@ -138,8 +138,8 @@ impl Config {
     }
 
     fn period_at(&self, now: i64) -> Result<u64> {
-        let elapsed = now.checked_sub(self.period_origin).ok_or(ZeroError::WrongPeriod)?;
-        require!(elapsed >= 0, ZeroError::WrongPeriod);
+        let elapsed = now.checked_sub(self.period_origin).ok_or(MobilootError::WrongPeriod)?;
+        require!(elapsed >= 0, MobilootError::WrongPeriod);
         Ok(elapsed as u64 / self.period_seconds as u64)
     }
 }
@@ -150,9 +150,9 @@ pub struct Entitlement {
     pub owner: Pubkey,
     pub period: u64,
     pub plan_code: [u8; 16],
-    /// zeroSOL held at activation.
+    /// lootSOL held at activation.
     pub pool_tokens: u64,
-    /// SOL value of that zeroSOL at activation.
+    /// SOL value of that lootSOL at activation.
     pub stake_lamports: u64,
     pub activated_at: i64,
     pub bump: u8,
@@ -180,9 +180,9 @@ impl PoolView {
         }
         let v = (tokens as u128)
             .checked_mul(self.total_lamports as u128)
-            .ok_or(ZeroError::MathOverflow)?
+            .ok_or(MobilootError::MathOverflow)?
             / self.pool_token_supply as u128;
-        u64::try_from(v).map_err(|_| error!(ZeroError::MathOverflow))
+        u64::try_from(v).map_err(|_| error!(MobilootError::MathOverflow))
     }
 }
 
@@ -191,7 +191,7 @@ fn read_pool(info: &AccountInfo) -> Result<PoolView> {
     let data = info.try_borrow_data()?;
     require!(
         data.len() >= MIN_LEN && data[ACCOUNT_TYPE] == ACCOUNT_TYPE_STAKE_POOL,
-        ZeroError::WrongStakePool
+        MobilootError::WrongStakePool
     );
     let u64_at = |o: usize| u64::from_le_bytes(data[o..o + 8].try_into().unwrap());
     Ok(PoolView {
@@ -213,8 +213,8 @@ pub struct Initialize<'info> {
     pub stake_pool: UncheckedAccount<'info>,
     /// Only the program's upgrade authority may create the config.
     #[account(constraint = program.programdata_address()? == Some(program_data.key()))]
-    pub program: Program<'info, crate::program::ZeroMobile>,
-    #[account(constraint = program_data.upgrade_authority_address == Some(admin.key()) @ ZeroError::Unauthorized)]
+    pub program: Program<'info, crate::program::Mobiloot>,
+    #[account(constraint = program_data.upgrade_authority_address == Some(admin.key()) @ MobilootError::Unauthorized)]
     pub program_data: Account<'info, ProgramData>,
     pub system_program: Program<'info, System>,
 }
@@ -237,8 +237,8 @@ pub struct Activate<'info> {
     #[account(address = config.stake_pool, owner = config.stake_pool_program)]
     pub stake_pool: UncheckedAccount<'info>,
     #[account(
-        constraint = holder_tokens.mint == config.pool_mint @ ZeroError::WrongMint,
-        constraint = holder_tokens.owner == owner.key() @ ZeroError::WrongOwner,
+        constraint = holder_tokens.mint == config.pool_mint @ MobilootError::WrongMint,
+        constraint = holder_tokens.owner == owner.key() @ MobilootError::WrongOwner,
     )]
     pub holder_tokens: Account<'info, TokenAccount>,
     #[account(
@@ -263,7 +263,7 @@ pub struct CloseEntitlement<'info> {
 }
 
 #[error_code]
-pub enum ZeroError {
+pub enum MobilootError {
     #[msg("Signer is not the program upgrade authority")]
     Unauthorized,
     #[msg("Activations are paused")]
@@ -272,11 +272,11 @@ pub enum ZeroError {
     WrongPeriod,
     #[msg("Account is not the configured stake pool")]
     WrongStakePool,
-    #[msg("Token account is not zeroSOL")]
+    #[msg("Token account is not lootSOL")]
     WrongMint,
     #[msg("Token account does not belong to the signer")]
     WrongOwner,
-    #[msg("Not enough zeroSOL to fund this plan")]
+    #[msg("Not enough lootSOL to fund this plan")]
     InsufficientStake,
     #[msg("The entitlement's period has not ended")]
     PeriodNotOver,

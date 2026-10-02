@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-shot devnet deployment: zero_mobile program, zeroSOL pool, program config.
+# One-shot devnet deployment: mobiloot program, lootSOL pool, program config.
 # Needs ~4 devnet SOL in the CLI wallet (solana address; fund at https://faucet.solana.com).
 # Re-runnable: each step skips work that is already done.
 set -euo pipefail
@@ -7,15 +7,15 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export CLUSTER=devnet
 URL=https://api.devnet.solana.com
-PROGRAM_KEYPAIR="$ROOT/keys/program/zero_mobile-keypair.json"
+PROGRAM_KEYPAIR="$ROOT/keys/program/mobiloot-keypair.json"
 PROGRAM_ID=$(solana address -k "$PROGRAM_KEYPAIR")
 
 echo "payer $(solana address) has $(solana balance -u $URL)"
 
 # 1. Program. Build if needed; deploy only if the account doesn't exist yet.
-[[ -f anchor/target/deploy/zero_mobile.so ]] || (cd anchor && anchor build)
+[[ -f anchor/target/deploy/mobiloot.so ]] || (cd anchor && anchor build)
 if ! solana program show -u $URL "$PROGRAM_ID" >/dev/null 2>&1; then
-  solana program deploy -u $URL anchor/target/deploy/zero_mobile.so --program-id "$PROGRAM_KEYPAIR" --with-compute-unit-price 10000
+  solana program deploy -u $URL anchor/target/deploy/mobiloot.so --program-id "$PROGRAM_KEYPAIR" --with-compute-unit-price 10000
 else
   echo "program $PROGRAM_ID already deployed"
 fi

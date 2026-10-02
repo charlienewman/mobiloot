@@ -3,7 +3,7 @@ import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import 'react-native-reanimated'
 import { colors } from '@/constants/theme'
-import { ZeroConfigProvider } from '@/features/config'
+import { MobilootConfigProvider } from '@/features/config'
 import { SessionProvider } from '@/features/session'
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } })
@@ -11,7 +11,7 @@ const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } 
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ZeroConfigProvider>
+      <MobilootConfigProvider>
         <SessionProvider>
           <Stack
             screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'fade' }}
@@ -23,7 +23,7 @@ export default function RootLayout() {
           </Stack>
           <StatusBar style="light" />
         </SessionProvider>
-      </ZeroConfigProvider>
+      </MobilootConfigProvider>
     </QueryClientProvider>
   )
 }

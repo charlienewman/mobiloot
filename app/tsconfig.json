@@ -6,7 +6,7 @@
       "@/*": [
         "./*"
       ],
-      "@zero/shared": [
+      "@mobiloot/shared": [
         "../shared/index.ts"
       ],
       "buffer": [

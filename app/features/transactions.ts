@@ -1,5 +1,5 @@
 // Builds, simulates, signs (via Mobile Wallet Adapter) and confirms the three user
-// transactions: deposit SOL for zeroSOL, withdraw SOL, and activate the plan.
+// transactions: deposit SOL for lootSOL, withdraw SOL, and activate the plan.
 import { useQueryClient } from '@tanstack/react-query'
 import {
   Connection,
@@ -19,9 +19,9 @@ import {
   fetchStakePool,
   refreshIxs,
   withdrawSolIx,
-  zeroErrorMessage,
-} from '@zero/shared'
-import { useZero } from './config'
+  mobilootErrorMessage,
+} from '@mobiloot/shared'
+import { useMobiloot } from './config'
 import { describeWalletError, useSession } from './session'
 
 export type TxStep = 'idle' | 'preparing' | 'wallet' | 'confirming' | 'done' | 'error'
@@ -34,7 +34,7 @@ export interface TxState {
 }
 
 export function useTransactions() {
-  const { connection, stakePool, zeroProgram, config } = useZero()
+  const { connection, stakePool, mobilootProgram, config } = useMobiloot()
   const wallet = useMobileWallet()
   const { address } = useSession()
   const queryClient = useQueryClient()
@@ -111,18 +111,18 @@ export function useTransactions() {
       run('activate', async (owner) => {
         const pool = await fetchStakePool(connection, stakePool)
         return [
-          // The program values zeroSOL at the pool's rate, which must be current.
+          // The program values lootSOL at the pool's rate, which must be current.
           ...(await refreshIxs(connection, pool)),
           activateIx({
             owner,
             stakePool,
             holderTokens: associatedTokenAddress(owner, pool.poolMint),
             period,
-            programId: zeroProgram,
+            programId: mobilootProgram,
           }),
         ]
       }),
-    [run, connection, stakePool, zeroProgram],
+    [run, connection, stakePool, mobilootProgram],
   )
 
   const reset = useCallback(() => setState({ step: 'idle' }), [])
@@ -147,8 +147,8 @@ async function confirmByPolling(connection: Connection, signature: string, lastV
 }
 
 function describeTxError(e: any): string {
-  const zero = zeroErrorMessage(e)
-  if (zero) return zero
+  const programError = mobilootErrorMessage(e)
+  if (programError) return programError
   const logs: string[] = e?.logs ?? []
   const text = String(e?.message ?? e) + logs.join(' ')
   if (/already in use/.test(text)) return 'Your plan is already active for this period.'

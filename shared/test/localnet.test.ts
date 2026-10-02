@@ -28,9 +28,9 @@ import {
   periodAt,
   refreshIxs,
   withdrawSolIx,
-  zeroErrorMessage,
+  mobilootErrorMessage,
   type StakePoolState,
-  type ZeroConfig,
+  type MobilootConfig,
 } from '../index'
 
 const cfgPath = path.resolve(import.meta.dirname, '../../config/localnet.json')
@@ -41,10 +41,10 @@ const reachable = await connection.getVersion().then(
 )
 const skip = !reachable ? 'localnet not running' : !fs.existsSync(cfgPath) ? 'pool not set up' : false
 
-describe('zeroSOL + entitlement on localnet', { skip }, () => {
+describe('lootSOL + entitlement on localnet', { skip }, () => {
   let cluster: any
   let pool: StakePoolState
-  let config: ZeroConfig
+  let config: MobilootConfig
   let programId: PublicKey
 
   async function funded(sol: number) {
@@ -71,14 +71,14 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
 
   before(async () => {
     cluster = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
-    programId = new PublicKey(cluster.zeroProgram)
+    programId = new PublicKey(cluster.mobilootProgram)
     pool = await fetchStakePool(connection, new PublicKey(cluster.stakePool))
     const info = await connection.getAccountInfo(configAddress(programId))
     assert.ok(info, 'program config missing: run npm -w ops run setup:program')
     config = decodeConfig(Buffer.from(info.data))
   })
 
-  test('deposit mints zeroSOL 1:1 and activation records an entitlement', async () => {
+  test('deposit mints lootSOL 1:1 and activation records an entitlement', async () => {
     const user = await funded(5)
     await deposit(user, 2)
     const held = await tokens(user.publicKey)
@@ -100,7 +100,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     const ent = decodeEntitlement(addr, Buffer.from((await connection.getAccountInfo(addr))!.data))
     assert.ok(ent.owner.equals(user.publicKey))
     assert.equal(ent.period, p)
-    assert.equal(ent.planCode, 'zero-essentials')
+    assert.equal(ent.planCode, 'loot-essentials')
     assert.ok(ent.stakeLamports >= config.minStakeLamports)
 
     await assert.rejects(
@@ -120,11 +120,11 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
     )
     await assert.rejects(
       send(user, closeEntitlementIx(user.publicKey, addr, programId)),
-      (e) => zeroErrorMessage(e) === 'This billing period has not ended yet',
+      (e) => mobilootErrorMessage(e) === 'This billing period has not ended yet',
     )
   })
 
-  test('rejects wallets without enough zeroSOL', async () => {
+  test('rejects wallets without enough lootSOL', async () => {
     const user = await funded(2)
     await deposit(user, 0.1)
     await assert.rejects(
@@ -139,7 +139,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
           programId,
         }),
       ),
-      (e) => zeroErrorMessage(e) === 'Not enough zeroSOL to fund this plan',
+      (e) => mobilootErrorMessage(e) === 'Not enough lootSOL to fund this plan',
     )
   })
 
@@ -159,7 +159,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
           programId,
         }),
       ),
-      (e) => zeroErrorMessage(e) === 'That token account belongs to someone else',
+      (e) => mobilootErrorMessage(e) === 'That token account belongs to someone else',
     )
     await assert.rejects(
       send(
@@ -173,7 +173,7 @@ describe('zeroSOL + entitlement on localnet', { skip }, () => {
           programId,
         }),
       ),
-      (e) => zeroErrorMessage(e) === 'That is not the current billing period',
+      (e) => mobilootErrorMessage(e) === 'That is not the current billing period',
     )
   })
 

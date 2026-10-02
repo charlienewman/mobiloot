@@ -1,7 +1,7 @@
 {
-  "name": "zero-mobile",
+  "name": "mobiloot",
   "private": true,
-  "description": "Zero Mobile by Shaka: a mobile plan paid for by your staking yield.",
+  "description": "Mobiloot: a mobile plan paid for by your staking yield.",
   "workspaces": [
     "shared",
     "ops",
@@ -15,7 +15,7 @@
     "api": "npm -w api run dev",
     "test": "npm -w shared test && npm -w api test",
     "typecheck": "tsc -p shared && tsc -p ops && tsc -p api",
-    "program:build": "cd anchor && anchor build && cp target/idl/zero_mobile.json idl/"
+    "program:build": "cd anchor && anchor build && cp target/idl/mobiloot.json idl/"
   },
   "engines": {
     "node": ">=22"

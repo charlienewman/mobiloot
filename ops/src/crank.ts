@@ -1,9 +1,9 @@
 // Permissionless epoch update. Deposits and withdrawals fail until the pool has been
 // updated for the current epoch, and this is also the moment the epoch's rewards are
-// minted to the Shaka treasury as zeroSOL. Run once per epoch (the API does this
+// minted to the Mobiloot treasury as lootSOL. Run once per epoch (the API does this
 // automatically); pass --watch to keep running.
 import { PublicKey } from '@solana/web3.js'
-import { fetchStakePool, fetchValidatorList, updateIxs } from '@zero/shared'
+import { fetchStakePool, fetchValidatorList, updateIxs } from '@mobiloot/shared'
 import { connection, loadConfig, send, sol } from './lib'
 
 export async function crankOnce(poolAddress: PublicKey) {

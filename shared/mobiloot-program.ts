@@ -1,10 +1,10 @@
-// Hand-written client for the zero_mobile Anchor program (see anchor/programs/zero_mobile).
-// Discriminators and layouts mirror anchor/target/idl/zero_mobile.json; the test suite
+// Hand-written client for the mobiloot Anchor program (see anchor/programs/mobiloot).
+// Discriminators and layouts mirror anchor/target/idl/mobiloot.json; the test suite
 // checks them against the IDL so the two cannot drift silently.
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js'
 import { Buffer } from 'buffer'
 
-export const ZERO_PROGRAM_ID = new PublicKey('ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp')
+export const MOBILOOT_PROGRAM_ID = new PublicKey('ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp')
 const BPF_UPGRADEABLE_LOADER = new PublicKey('BPFLoaderUpgradeab1e11111111111111111111111')
 
 export const DISCRIMINATORS = {
@@ -16,14 +16,14 @@ export const DISCRIMINATORS = {
   Entitlement: [220, 250, 27, 244, 55, 49, 74, 154],
 } as const
 
-export const ZERO_ERRORS: Record<number, string> = {
+export const MOBILOOT_ERRORS: Record<number, string> = {
   6000: 'Only the program upgrade authority can do this',
   6001: 'Plan activations are paused',
   6002: 'That is not the current billing period',
   6003: 'Wrong stake pool',
-  6004: 'That token account does not hold zeroSOL',
+  6004: 'That token account does not hold lootSOL',
   6005: 'That token account belongs to someone else',
-  6006: 'Not enough zeroSOL to fund this plan',
+  6006: 'Not enough lootSOL to fund this plan',
   6007: 'This billing period has not ended yet',
   6008: 'Invalid configuration',
   6009: 'Arithmetic overflow',
@@ -38,7 +38,7 @@ export interface ConfigParams {
   paused: boolean
 }
 
-export interface ZeroConfig extends ConfigParams {
+export interface MobilootConfig extends ConfigParams {
   admin: PublicKey
   stakePoolProgram: PublicKey
   stakePool: PublicKey
@@ -55,11 +55,11 @@ export interface Entitlement {
   activatedAt: bigint
 }
 
-export function configAddress(programId = ZERO_PROGRAM_ID): PublicKey {
+export function configAddress(programId = MOBILOOT_PROGRAM_ID): PublicKey {
   return PublicKey.findProgramAddressSync([Buffer.from('config')], programId)[0]
 }
 
-export function entitlementAddress(owner: PublicKey, period: bigint, programId = ZERO_PROGRAM_ID): PublicKey {
+export function entitlementAddress(owner: PublicKey, period: bigint, programId = MOBILOOT_PROGRAM_ID): PublicKey {
   const p = Buffer.alloc(8)
   p.writeBigUInt64LE(period)
   return PublicKey.findProgramAddressSync([Buffer.from('entitlement'), owner.toBuffer(), p], programId)[0]
@@ -104,7 +104,7 @@ function checkDiscriminator(data: Buffer, expected: readonly number[], name: str
   if (data.length < 8 || !expected.every((v, i) => data[i] === v)) throw new Error(`Not a ${name} account`)
 }
 
-export function decodeConfig(data: Buffer): ZeroConfig {
+export function decodeConfig(data: Buffer): MobilootConfig {
   checkDiscriminator(data, DISCRIMINATORS.Config, 'Config')
   const key = (o: number) => new PublicKey(data.subarray(o, o + 32))
   return {
@@ -143,7 +143,7 @@ export function activateIx(args: {
   period: bigint
   programId?: PublicKey
 }) {
-  const programId = args.programId ?? ZERO_PROGRAM_ID
+  const programId = args.programId ?? MOBILOOT_PROGRAM_ID
   const data = Buffer.alloc(16)
   Buffer.from(DISCRIMINATORS.activate).copy(data)
   data.writeBigUInt64LE(args.period, 8)
@@ -161,7 +161,7 @@ export function activateIx(args: {
   })
 }
 
-export function closeEntitlementIx(owner: PublicKey, entitlement: PublicKey, programId = ZERO_PROGRAM_ID) {
+export function closeEntitlementIx(owner: PublicKey, entitlement: PublicKey, programId = MOBILOOT_PROGRAM_ID) {
   return new TransactionInstruction({
     programId,
     keys: [rw(owner, true), ro(configAddress(programId)), rw(entitlement)],
@@ -173,7 +173,7 @@ export function initializeConfigIx(
   admin: PublicKey,
   stakePool: PublicKey,
   params: ConfigParams,
-  programId = ZERO_PROGRAM_ID,
+  programId = MOBILOOT_PROGRAM_ID,
 ) {
   const programData = PublicKey.findProgramAddressSync([programId.toBuffer()], BPF_UPGRADEABLE_LOADER)[0]
   return new TransactionInstruction({
@@ -190,7 +190,7 @@ export function initializeConfigIx(
   })
 }
 
-export function updateConfigIx(admin: PublicKey, params: ConfigParams, programId = ZERO_PROGRAM_ID) {
+export function updateConfigIx(admin: PublicKey, params: ConfigParams, programId = MOBILOOT_PROGRAM_ID) {
   return new TransactionInstruction({
     programId,
     keys: [ro(admin, true), rw(configAddress(programId))],
@@ -198,11 +198,11 @@ export function updateConfigIx(admin: PublicKey, params: ConfigParams, programId
   })
 }
 
-/** Extracts a zero_mobile custom error code from a failed transaction's logs or error. */
-export function zeroErrorMessage(err: unknown): string | undefined {
+/** Extracts a mobiloot custom error code from a failed transaction's logs or error. */
+export function mobilootErrorMessage(err: unknown): string | undefined {
   const text = String((err as any)?.message ?? err) + ' ' + ((err as any)?.logs ?? []).join(' ')
   const m = text.match(/custom program error: 0x([0-9a-f]+)/i) ?? text.match(/Error Number: (\d+)/)
   if (!m) return undefined
   const code = m[0].includes('0x') ? parseInt(m[1], 16) : Number(m[1])
-  return ZERO_ERRORS[code]
+  return MOBILOOT_ERRORS[code]
 }

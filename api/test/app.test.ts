@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { beforeEach, describe, test } from 'node:test'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import nacl from 'tweetnacl'
-import type { Entitlement, ZeroConfig } from '@zero/shared'
+import type { Entitlement, MobilootConfig } from '@mobiloot/shared'
 import { buildApp, type Deps } from '../src/app'
 import { formatSiwsMessage } from '../src/auth'
 import { createCoverage } from '../src/coverage'
@@ -10,12 +10,12 @@ import { openDb } from '../src/db'
 import { MockProvider } from '../src/provider/mock'
 
 const MIN = 500_000_000n
-const config: ZeroConfig = {
+const config: MobilootConfig = {
   admin: PublicKey.default,
   stakePoolProgram: PublicKey.default,
   stakePool: PublicKey.default,
   poolMint: PublicKey.default,
-  planCode: 'zero-essentials',
+  planCode: 'loot-essentials',
   minStakeLamports: MIN,
   periodSeconds: 2_592_000,
   periodOrigin: 1_788_220_800n,
@@ -42,10 +42,10 @@ function setup() {
       stakePool: 's',
       poolMint: 'm',
       treasury: 't',
-      zeroProgram: 'z',
+      mobilootProgram: 'z',
     },
-    signInDomain: 'zero.test',
-    fetchZeroConfig: async () => config,
+    signInDomain: 'mobiloot.test',
+    fetchMobilootConfig: async () => config,
     currentPeriod: async () => 1n,
     fetchEntitlement: async (owner, period) => entitled.get(`${owner.toBase58()}:${period}`),
     fetchHoldings: async (owner) => {
@@ -62,7 +62,7 @@ function setup() {
       address: Keypair.generate().publicKey,
       owner: kp.publicKey,
       period: 1n,
-      planCode: 'zero-essentials',
+      planCode: 'loot-essentials',
       poolTokens: stake,
       stakeLamports: stake,
       activatedAt: 0n,
@@ -101,7 +101,7 @@ describe('auth', () => {
   test('issues a domain-bound challenge and a session for a valid signature', async () => {
     const kp = Keypair.generate()
     const s = await signIn(ctx.app, kp)
-    assert.match(s.message, /^zero\.test wants you to sign in/)
+    assert.match(s.message, /^mobiloot\.test wants you to sign in/)
     assert.match(s.message, /Chain ID: solana:localnet/)
     assert.match(s.message, new RegExp(`Nonce: ${s.nonce}`))
     const res = await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })
@@ -238,7 +238,7 @@ describe('eSIM provisioning', () => {
     assert.doesNotMatch(me, /LPA:/)
     const revealed = (await ctx.app.inject({ method: 'POST', url: '/v1/esim/reveal', headers: auth })).json()
     assert.match(revealed.activationCode, /^LPA:1\$/)
-    assert.equal(revealed.smdpAddress, 'rsp.mock.zero.invalid')
+    assert.equal(revealed.smdpAddress, 'rsp.mock.mobiloot.invalid')
   })
 
   test('reports usage for an active eSIM', async () => {
@@ -250,7 +250,7 @@ describe('eSIM provisioning', () => {
   })
 
   test('a line is suspended while its wallet stops covering the plan, and resumes after', async () => {
-    // The relay attack: activate and provision, then hand the zeroSOL to another wallet.
+    // The relay attack: activate and provision, then hand the lootSOL to another wallet.
     ctx.entitle(kp)
     await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })
     ctx.holdings.set(kp.publicKey.toBase58(), 0n)

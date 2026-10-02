@@ -5,19 +5,19 @@ import path from 'node:path'
 import { test } from 'node:test'
 import { PublicKey } from '@solana/web3.js'
 import { Buffer } from 'buffer'
-import { DISCRIMINATORS, ZERO_ERRORS, ZERO_PROGRAM_ID, decodeConfig, periodAt, periodBounds } from '../zero-program'
+import { DISCRIMINATORS, MOBILOOT_ERRORS, MOBILOOT_PROGRAM_ID, decodeConfig, periodAt, periodBounds } from '../mobiloot-program'
 
-const idlPath = path.resolve(import.meta.dirname, '../../anchor/idl/zero_mobile.json')
+const idlPath = path.resolve(import.meta.dirname, '../../anchor/idl/mobiloot.json')
 const idl = fs.existsSync(idlPath) ? JSON.parse(fs.readFileSync(idlPath, 'utf8')) : undefined
 
 test('discriminators, errors and program id match the IDL', { skip: !idl && 'run anchor build first' }, () => {
-  assert.equal(idl.address, ZERO_PROGRAM_ID.toBase58())
+  assert.equal(idl.address, MOBILOOT_PROGRAM_ID.toBase58())
   const camel = (s: string) => s.replace(/_(\w)/g, (_, c) => c.toUpperCase())
   for (const ix of idl.instructions)
     assert.deepEqual([...(DISCRIMINATORS as any)[camel(ix.name)]], ix.discriminator, ix.name)
   for (const acct of idl.accounts)
     assert.deepEqual([...(DISCRIMINATORS as any)[acct.name]], acct.discriminator, acct.name)
-  for (const err of idl.errors) assert.ok(ZERO_ERRORS[err.code], `missing message for ${err.name}`)
+  for (const err of idl.errors) assert.ok(MOBILOOT_ERRORS[err.code], `missing message for ${err.name}`)
 })
 
 test('decodes a Config account', () => {
@@ -25,12 +25,12 @@ test('decodes a Config account', () => {
   Buffer.from(DISCRIMINATORS.Config).copy(data)
   const keys = [1, 2, 3, 4].map((n) => new PublicKey(Buffer.alloc(32, n)))
   keys.forEach((k, i) => k.toBuffer().copy(data, 8 + i * 32))
-  Buffer.from('zero-essentials').copy(data, 136)
+  Buffer.from('loot-essentials').copy(data, 136)
   data.writeBigUInt64LE(500_000_000n, 152)
   data.writeUInt32LE(2_592_000, 160)
   data.writeBigInt64LE(1_788_220_800n, 164)
   const c = decodeConfig(data)
-  assert.equal(c.planCode, 'zero-essentials')
+  assert.equal(c.planCode, 'loot-essentials')
   assert.equal(c.minStakeLamports, 500_000_000n)
   assert.ok(c.poolMint.equals(keys[3]))
   assert.equal(c.paused, false)

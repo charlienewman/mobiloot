@@ -3,11 +3,11 @@ import { View } from 'react-native'
 import { colors } from '@/constants/theme'
 import { Text } from './ui'
 
-/** The Zero mark: a "0" drawn as a SIM card outline with its cut corner. */
-export function ZeroMark({ size = 40, color = colors.lime }: { size?: number; color?: string }) {
+/** The Mobiloot mark: a SIM card outline with its cut corner and chip. */
+export function BrandMark({ size = 40, color = colors.lime }: { size?: number; color?: string }) {
   const w = size * 0.72
   return (
-    <Svg width={w} height={size} viewBox="0 0 72 100" accessibilityLabel="Zero Mobile">
+    <Svg width={w} height={size} viewBox="0 0 72 100" accessibilityLabel="Mobiloot">
       <Path
         d="M20 6 H50 L66 22 V78 A16 16 0 0 1 50 94 H22 A16 16 0 0 1 6 78 V20 A14 14 0 0 1 20 6 Z"
         fill="none"
@@ -24,11 +24,11 @@ export function ZeroMark({ size = 40, color = colors.lime }: { size?: number; co
 export function Wordmark({ size = 22 }: { size?: number }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <ZeroMark size={size * 1.35} />
+      <BrandMark size={size * 1.35} />
       <View>
-        <Text style={{ fontSize: size, lineHeight: size * 1.1, fontWeight: '800', letterSpacing: -0.6 }}>Zero</Text>
+        <Text style={{ fontSize: size, lineHeight: size * 1.1, fontWeight: '800', letterSpacing: -0.6 }}>Mobiloot</Text>
         <Text variant="label" color={colors.textMuted} style={{ fontSize: 10, lineHeight: 12 }}>
-          by Shaka
+          stake-paid mobile
         </Text>
       </View>
     </View>

@@ -1,23 +1,23 @@
-// Initializes (or updates) the zero_mobile program config for a cluster.
+// Initializes (or updates) the mobiloot program config for a cluster.
 //   CLUSTER=localnet npm -w ops run setup:program
 // The payer must be the program's upgrade authority.
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import {
-  ZERO_PROGRAM_ID,
+  MOBILOOT_PROGRAM_ID,
   configAddress,
   decodeConfig,
   initializeConfigIx,
   updateConfigIx,
   type ConfigParams,
-} from '@zero/shared'
+} from '@mobiloot/shared'
 import { Buffer } from 'buffer'
 import { CLUSTER, connection, loadConfig, payer, saveConfig, send } from './lib'
 
 const config = loadConfig()
-const programId = new PublicKey(process.env.ZERO_PROGRAM ?? config.zeroProgram ?? ZERO_PROGRAM_ID)
+const programId = new PublicKey(process.env.MOBILOOT_PROGRAM ?? config.mobilootProgram ?? MOBILOOT_PROGRAM_ID)
 
 const params: ConfigParams = {
-  planCode: 'zero-essentials',
+  planCode: 'loot-essentials',
   // Mainnet would size this so the pool's yield covers the plan's wholesale cost
   // (see docs/economics.md). Test clusters use a low bar so anyone can try it.
   minStakeLamports: BigInt(
@@ -43,5 +43,5 @@ if (existing) {
     initializeConfigIx(payer.publicKey, new PublicKey(config.stakePool), params, programId),
   ])
 }
-saveConfig({ zeroProgram: programId.toBase58() })
+saveConfig({ mobilootProgram: programId.toBase58() })
 console.log(`config ${configAddress(programId).toBase58()} for program ${programId.toBase58()}`)

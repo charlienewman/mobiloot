@@ -1,11 +1,11 @@
-// Creates the zeroSOL stake pool and writes its public addresses to config/<cluster>.json.
+// Creates the lootSOL stake pool and writes its public addresses to config/<cluster>.json.
 // Re-runnable: keypairs persist in keys/<cluster>/ and finished steps are skipped.
 //
 //   CLUSTER=localnet npm run pool:setup
 //   CLUSTER=devnet VOTES=<vote>[,<vote>] SEED_SOL=1.6 npm run pool:setup
 //
 // Economics: the epoch fee is 100%, so every staking reward the pool earns is minted
-// as zeroSOL to the Shaka treasury. Depositors keep their principal (1 zeroSOL stays
+// as lootSOL to the Mobiloot treasury. Depositors keep their principal (1 lootSOL stays
 // worth ~1 SOL) and can withdraw at any time with no fee.
 import { LAMPORTS_PER_SOL, PublicKey, StakeProgram, SystemProgram, TransactionInstruction } from '@solana/web3.js'
 import { Buffer } from 'buffer'
@@ -24,7 +24,7 @@ import {
   validatorListSize,
   withdrawAuthority,
   type ClusterConfig,
-} from '@zero/shared'
+} from '@mobiloot/shared'
 import { CLUSTER, RPC_URL, connection, namedKeypair, payer, saveConfig, send, sol } from './lib'
 
 // Sanctum's SPL stake pool fork. The official SPoo1 deployment on devnet predates the
@@ -32,9 +32,9 @@ import { CLUSTER, RPC_URL, connection, namedKeypair, payer, saveConfig, send, so
 const PROGRAM_ID = new PublicKey(process.env.STAKE_POOL_PROGRAM ?? 'SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY')
 const SEED_SOL = Number(process.env.SEED_SOL ?? (CLUSTER === 'localnet' ? 20 : 1.6))
 const MAX_VALIDATORS = 10
-const METADATA_URI = process.env.METADATA_URI ?? 'https://zero.shaka.tel/zerosol.json'
+const METADATA_URI = process.env.METADATA_URI ?? 'https://mobiloot.com/lootsol.json'
 
-const treasury = namedKeypair('shaka-treasury')
+const treasury = namedKeypair('treasury')
 const poolKp = namedKeypair('pool')
 const mintKp = namedKeypair('mint')
 const reserveKp = namedKeypair('reserve')
@@ -128,8 +128,8 @@ async function createPool() {
   const state = await fetchStakePool(connection, pool)
   try {
     await send(
-      'create zeroSOL token metadata',
-      [createTokenMetadataIx(state, payer.publicKey, 'Zero Staked SOL', 'zeroSOL', METADATA_URI)],
+      'create lootSOL token metadata',
+      [createTokenMetadataIx(state, payer.publicKey, 'Mobiloot Staked SOL', 'lootSOL', METADATA_URI)],
       [treasury],
     )
   } catch {

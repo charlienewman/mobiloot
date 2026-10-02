@@ -2,7 +2,7 @@ import { Connection, Keypair, Transaction, TransactionInstruction, sendAndConfir
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import type { ClusterConfig } from '@zero/shared'
+import type { ClusterConfig } from '@mobiloot/shared'
 
 export const ROOT = path.resolve(import.meta.dirname, '../..')
 export const CLUSTER = (process.env.CLUSTER ?? 'localnet') as ClusterConfig['cluster']

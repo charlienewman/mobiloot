@@ -16,7 +16,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === 'buffer') {
     return { type: 'sourceFile', filePath: require.resolve('buffer/index.js', { paths: [projectRoot] }) }
   }
-  if (moduleName === '@zero/shared') {
+  if (moduleName === '@mobiloot/shared') {
     return { type: 'sourceFile', filePath: path.join(sharedDir, 'index.ts') }
   }
   if (context.originModulePath.startsWith(sharedDir + path.sep) && !moduleName.startsWith('.')) {

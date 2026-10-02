@@ -19,12 +19,12 @@ import {
   Text,
 } from '@/components/ui'
 import { colors, space } from '@/constants/theme'
-import { useZero } from '@/features/config'
+import { useMobiloot } from '@/features/config'
 import { useFunding, useMe, usePool, useUsage } from '@/features/data'
 import { daysUntil, mb, pct, sol, usd } from '@/features/format'
 
 export default function Home() {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const me = useMe()
   const pool = usePool()
   const queryClient = useQueryClient()
@@ -94,7 +94,7 @@ export default function Home() {
 
       {config.cluster !== 'mainnet-beta' ? (
         <Notice tone="warn">
-          {config.cluster === 'devnet' ? 'Devnet' : 'Localnet'} demo: the plan unlocks at {funding.minStakeSol} zeroSOL
+          {config.cluster === 'devnet' ? 'Devnet' : 'Localnet'} demo: the plan unlocks at {funding.minStakeSol} lootSOL
           so anyone can try it. At today&apos;s yield, fully funding {config.plan.name} takes about{' '}
           {funding.fullStakeSol.toFixed(1)} SOL. Test SOL has no monetary value.
         </Notice>
@@ -116,10 +116,10 @@ export default function Home() {
         </Row>
         <Divider />
         <KeyValue
-          label="Paid to Shaka for plans so far"
+          label="Paid to the treasury for plans so far"
           value={pool.data ? `${sol(pool.data.treasuryEarnedLamports, 4)} SOL` : '…'}
         />
-        <KeyValue label="1 zeroSOL is worth" value={pool.data ? `${pool.data.exchangeRate.toFixed(4)} SOL` : '…'} />
+        <KeyValue label="1 lootSOL is worth" value={pool.data ? `${pool.data.exchangeRate.toFixed(4)} SOL` : '…'} />
         <Stack gap={6}>
           <Row style={{ justifyContent: 'space-between' }}>
             <Text variant="small" color={colors.textMuted}>
@@ -144,7 +144,7 @@ function PlanCard(props: {
   usage?: { dataUsedMb: number; dataTotalMb: number; minutesUsed: number; textsUsed: number }
   onGo: (tab: '/(tabs)/plan' | '/(tabs)/stake') => void
 }) {
-  const { config } = useZero()
+  const { config } = useMobiloot()
   const min = Number(config.minStakeLamports)
 
   if (props.active && props.esimReady && props.suspended) {
@@ -155,7 +155,7 @@ function PlanCard(props: {
           <Chip label="Suspended" tone="danger" />
         </Row>
         <Text color={colors.textMuted}>
-          Your line is paused because your wallet holds less than {sol(min)} zeroSOL. Stake back up and it resumes
+          Your line is paused because your wallet holds less than {sol(min)} lootSOL. Stake back up and it resumes
           automatically.
         </Text>
         <Button title="Stake SOL" onPress={() => props.onGo('/(tabs)/stake')} />
@@ -233,7 +233,7 @@ function PlanCard(props: {
       <View style={{ gap: 6 }}>
         <ProgressBar value={progress} />
         <Text variant="small" color={colors.textMuted}>
-          {sol(props.stakeLamports)} of {sol(min)} zeroSOL. Stake {sol(Math.max(0, min - props.stakeLamports))} more SOL
+          {sol(props.stakeLamports)} of {sol(min)} lootSOL. Stake {sol(Math.max(0, min - props.stakeLamports))} more SOL
           to unlock.
         </Text>
       </View>

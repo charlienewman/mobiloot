@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Local Solana validator for Zero Mobile development.
+# Local Solana validator for Mobiloot development.
 #  - 64-slot epochs (~25 s), so staking rewards land within a minute
 #  - the same stake pool and token metadata programs as devnet, dumped once
 #    into .localnet/programs so later starts work offline
-#  - the zero_mobile program, if it has been built
+#  - the mobiloot program, if it has been built
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LEDGER="$ROOT/.localnet/ledger"
@@ -22,8 +22,8 @@ ARGS=(
   --bpf-program $STAKE_POOL_PROGRAM "$PROGRAMS/$STAKE_POOL_PROGRAM.so"
   --bpf-program $TOKEN_METADATA_PROGRAM "$PROGRAMS/$TOKEN_METADATA_PROGRAM.so"
 )
-if [[ -f "$ROOT/anchor/target/deploy/zero_mobile.so" ]]; then
-  PROGRAM_ID=$(solana address -k "$ROOT/anchor/target/deploy/zero_mobile-keypair.json")
-  ARGS+=(--upgradeable-program "$PROGRAM_ID" "$ROOT/anchor/target/deploy/zero_mobile.so" "$HOME/.config/solana/id.json")
+if [[ -f "$ROOT/anchor/target/deploy/mobiloot.so" ]]; then
+  PROGRAM_ID=$(solana address -k "$ROOT/anchor/target/deploy/mobiloot-keypair.json")
+  ARGS+=(--upgradeable-program "$PROGRAM_ID" "$ROOT/anchor/target/deploy/mobiloot.so" "$HOME/.config/solana/id.json")
 fi
 exec solana-test-validator --ledger "$LEDGER" --slots-per-epoch 64 "${ARGS[@]}" "$@"

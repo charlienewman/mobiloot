@@ -1,4 +1,4 @@
-# Shaka sandbox integration
+# eSIM provider integration
 
 The API talks to telecom providers through one interface,
 [`MobileProvider`](../api/src/provider/types.ts). Two implementations exist:
@@ -8,7 +8,8 @@ The API talks to telecom providers through one interface,
 | `mock` (default) | `MockProvider` | Complete. Deterministic, credential-free, used by tests and judges. |
 | `shaka_sandbox` | `ShakaSandboxProvider` | Skeleton. Every method throws until it is wired to the sandbox API. |
 
-The sandbox adapter is deliberately unimplemented. Endpoint paths, the auth
+The first real adapter targets Shaka's wholesale eSIM API, which any developer
+can use. It is deliberately unimplemented. Endpoint paths, the auth
 scheme and payload fields have to come from Shaka's sandbox documentation, not
 from guesses.
 
@@ -39,5 +40,4 @@ SHAKA_SANDBOX_API_KEY=...    # server-side only, never in the app or repo
 - [ ] Sandbox docs and credentials obtained; credentials stored only in the API host's secret store.
 - [ ] Adapter implemented from the docs; contract tests added using **sanitised** real sandbox responses.
 - [ ] Confirmed the plan name, allowances and cost used in `api/src/plans.ts` are OK to show publicly.
-- [ ] Confirmed with Shaka what can appear in the public repo, video and deck.
 - [ ] `npm test` still passes in mock mode (cloneability).

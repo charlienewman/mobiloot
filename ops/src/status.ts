@@ -1,5 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
-import { associatedTokenAddress, fetchStakePool, fetchValidatorList, poolTokensToLamports } from '@zero/shared'
+import { associatedTokenAddress, fetchStakePool, fetchValidatorList, poolTokensToLamports } from '@mobiloot/shared'
 import { connection, loadConfig, sol } from './lib'
 
 const config = loadConfig()
@@ -11,16 +11,16 @@ const treasuryTokens = BigInt((await connection.getTokenAccountBalance(treasuryA
 const reserve = await connection.getBalance(pool.reserveStake)
 
 console.log(
-  `zeroSOL pool ${pool.address.toBase58()} (${config.cluster}, epoch ${epoch}, updated ${pool.lastUpdateEpoch})`,
+  `lootSOL pool ${pool.address.toBase58()} (${config.cluster}, epoch ${epoch}, updated ${pool.lastUpdateEpoch})`,
 )
 console.log(`  total staked      ${sol(pool.totalLamports)} SOL`)
 console.log(
-  `  zeroSOL supply    ${sol(pool.poolTokenSupply)}  (1 zeroSOL = ${(Number(pool.totalLamports) / Number(pool.poolTokenSupply)).toFixed(9)} SOL)`,
+  `  lootSOL supply    ${sol(pool.poolTokenSupply)}  (1 lootSOL = ${(Number(pool.totalLamports) / Number(pool.poolTokenSupply)).toFixed(9)} SOL)`,
 )
-console.log(`  epoch fee         ${pool.epochFee.numerator}/${pool.epochFee.denominator} → Shaka treasury`)
+console.log(`  epoch fee         ${pool.epochFee.numerator}/${pool.epochFee.denominator} → Mobiloot treasury`)
 console.log(`  reserve (liquid)  ${sol(reserve)} SOL`)
 console.log(
-  `  treasury earned   ${sol(treasuryTokens)} zeroSOL ≈ ${sol(poolTokensToLamports(pool, treasuryTokens))} SOL`,
+  `  treasury earned   ${sol(treasuryTokens)} lootSOL ≈ ${sol(poolTokensToLamports(pool, treasuryTokens))} SOL`,
 )
 for (const v of list) {
   console.log(

@@ -1,5 +1,5 @@
 {
-  "name": "@zero/ops",
+  "name": "@mobiloot/ops",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,6 @@
     "rebalance": "tsx src/rebalance.ts"
   },
   "dependencies": {
-    "@zero/shared": "*"
+    "@mobiloot/shared": "*"
   }
 }

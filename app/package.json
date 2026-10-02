@@ -1,5 +1,5 @@
 {
-  "name": "zero-mobile-app",
+  "name": "mobiloot-app",
   "scripts": {
     "android": "expo run:android",
     "android:build": "expo prebuild -p android",
@@ -15,8 +15,8 @@
     "start": "expo start",
     "web": "expo start --web"
   },
-  "displayName": "Zero Mobile",
-  "description": "Zero Mobile by Shaka: a mobile plan paid for by your staking yield.",
+  "displayName": "Mobiloot",
+  "description": "Mobiloot: a mobile plan paid for by your staking yield.",
   "usecase": "Mobile",
   "keywords": [
     "expo",

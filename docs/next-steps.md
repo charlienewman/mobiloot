@@ -9,18 +9,18 @@ The devnet faucet was rate-limited for this machine when the build was done.
 1. Fund the CLI wallet with about 4 devnet SOL: `solana address`, then
    <https://faucet.solana.com> (GitHub login allows larger airdrops).
 2. `./scripts/deploy-devnet.sh`. This deploys the program (about 2.2 SOL of
-   rent), creates the zeroSOL pool delegated to a healthy low-commission
+   rent), creates the lootSOL pool delegated to a healthy low-commission
    validator, and initialises the program config.
 3. Commit `config/devnet.json`. Back up `keys/` somewhere safe (it holds the
    program upgrade key, pool keys and the treasury key; it is git-ignored).
 
 ## 2. Host the API
 
-`docker build -f api/Dockerfile -t zero-api .`, then run with:
+`docker build -f api/Dockerfile -t mobiloot-api .`, then run with:
 
 ```
 CLUSTER=devnet
-SIGN_IN_DOMAIN=zero.shaka.tel     # must match the app identity domain
+SIGN_IN_DOMAIN=mobiloot.com     # must match the app identity domain
 CRANK_KEYPAIR=/secrets/crank.json # any funded devnet keypair; pays epoch updates
 ```
 
@@ -29,23 +29,23 @@ Mount a volume at `/data` for the SQLite database. Any HTTPS host works
 
 ## 3. Make the wallet show "verified" instead of "unverified"
 
-Wallets verify the app identity `https://zero.shaka.tel` using Android Digital
-Asset Links. Serve `https://zero.shaka.tel/.well-known/assetlinks.json` with the
+Wallets verify the app identity `https://mobiloot.com` using Android Digital
+Asset Links. Serve `https://mobiloot.com/.well-known/assetlinks.json` with the
 release signing certificate's SHA-256 (from `apksigner verify --print-certs`):
 
 ```json
 [{ "relation": ["delegate_permission/common.handle_all_urls"],
-   "target": { "namespace": "android_app", "package_name": "tel.shaka.zero",
+   "target": { "namespace": "android_app", "package_name": "com.mobiloot.app",
                "sha256_cert_fingerprints": ["<SHA-256>"] } }]
 ```
 
-If `zero.shaka.tel` isn't wanted, change `APP_IDENTITY.uri` in
+If `mobiloot.com` isn't wanted, change `APP_IDENTITY.uri` in
 `app/constants/env.ts` and `SIGN_IN_DOMAIN` together.
 
 ## 4. Build the submission APK
 
 ```bash
-ZERO_KEYSTORE_PASSWORD=... EXPO_PUBLIC_API_URL=https://<api-host> ./scripts/build-apk.sh
+MOBILOOT_KEYSTORE_PASSWORD=... EXPO_PUBLIC_API_URL=https://<api-host> ./scripts/build-apk.sh
 ```
 
 This creates `keys/release.keystore` on first run. **Back it up**: the dApp
@@ -55,19 +55,22 @@ the certificate and APK SHA-256.
 Test on a physical phone with a real MWA wallet (Seed Vault, Phantom or
 Solflare, set to devnet) before recording.
 
-## 5. Shaka
+## 5. eSIM provider
 
-- [ ] Written permission to use the Shaka name and sandbox in a public repo,
-  video and deck.
-- [ ] Sandbox docs and credentials, then implement `ShakaSandboxProvider`
-  ([shaka-sandbox.md](shaka-sandbox.md)).
+- [ ] Shaka wholesale API docs and sandbox credentials, then implement
+  `ShakaSandboxProvider` ([esim-provider.md](esim-provider.md)). Mock mode is
+  fine for the submission.
 - [ ] Confirm the plan shown (`api/src/plans.ts`: name, 10 GB, UK and EU
   roaming, $6/mo cost assumption) or give the real values.
 
 ## 6. Competition admin
 
-- [ ] Email `hackathon@radiant.nexus` about whether Shaka's funding affects USDC
-  prize eligibility for this entry. Keep the reply.
+- [ ] Register on Align (personal builder profile) before the sign-up deadline
+  on the event schedule.
+- [ ] Optional but recommended: email `hackathon@radiant.nexus` with a one-line
+  disclosure (independent personal entry, unfunded; Charlie is a minority
+  shareholder in Shaka, whose public eSIM API is the planned provider). Keep
+  the reply.
 - [ ] Push the repo to GitHub, public or accessible to judges. Commit history
   starts 26 Sep 2026.
 - [ ] Record the demo from [demo-script.md](demo-script.md), make the deck,

@@ -10,5 +10,5 @@ export interface ClusterConfig {
   treasury: string
   treasuryFeeAccount: string
   validatorVotes: string[]
-  zeroProgram?: string
+  mobilootProgram?: string
 }

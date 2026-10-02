@@ -25,7 +25,7 @@ interface SessionContext {
   invalidate(): void
 }
 
-const KEY = 'zero.session.v1'
+const KEY = 'mobiloot.session.v1'
 const Ctx = createContext<SessionContext | null>(null)
 
 export function useSession() {

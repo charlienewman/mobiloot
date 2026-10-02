@@ -10,7 +10,7 @@ import type { Db } from './db'
 
 const CHALLENGE_TTL_MS = 5 * 60_000
 const SESSION_TTL_MS = 7 * 24 * 3600_000
-export const SIWS_STATEMENT = 'Sign in to Zero Mobile by Shaka. This does not move any funds.'
+export const SIWS_STATEMENT = 'Sign in to Mobiloot. This does not move any funds.'
 
 export interface SiwsInput {
   domain: string

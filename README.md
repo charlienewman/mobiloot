@@ -1,4 +1,4 @@
-# Zero Mobile by Shaka
+# Mobiloot
 
 **A mobile plan paid for by your staking yield.** Stake SOL, keep your principal,
 and let the rewards pay for your phone plan. There's no card and no monthly bill.
@@ -7,20 +7,20 @@ Built for **Clock In, the Solana Mobile hackathon**, as an Android-first app for
 Seeker and any Android phone with a Mobile Wallet Adapter wallet.
 
 ```
-stake SOL ──► zeroSOL in your wallet ──► rewards go to Shaka ──► plan unlocked on-chain ──► eSIM
+stake SOL ──► lootSOL in your wallet ──► rewards go to the treasury ──► plan unlocked on-chain ──► eSIM
 ```
 
 ## How it works
 
-1. **Stake.** Deposit SOL into the zeroSOL stake pool and get zeroSOL back in
+1. **Stake.** Deposit SOL into the lootSOL stake pool and get lootSOL back in
    your own wallet. You can redeem it any time with no fee.
-2. **Your yield pays.** The pool sends 100% of its staking rewards to Shaka's
-   treasury, so 1 zeroSOL stays worth about 1 SOL. You pay with the yield, not
+2. **Your yield pays.** The pool sends 100% of its staking rewards to the
+   Mobiloot treasury, which pays for the plan, so 1 lootSOL stays worth about 1 SOL. You pay with the yield, not
    the principal.
-3. **Unlock.** Each billing period, the `zero_mobile` program checks your
-   zeroSOL (valued at the pool's live rate) and writes an entitlement on-chain.
+3. **Unlock.** Each billing period, the `mobiloot` program checks your
+   lootSOL (valued at the pool's live rate) and writes an entitlement on-chain.
    Nothing personal goes on-chain.
-4. **Connect.** The Zero API verifies the entitlement and provisions your eSIM.
+4. **Connect.** The Mobiloot API verifies the entitlement and provisions your eSIM.
    You install it from Android settings using the in-app code, QR code and
    settings shortcut.
 
@@ -33,11 +33,11 @@ price. See [docs/economics.md](docs/economics.md).
 | | Status |
 | --- | --- |
 | Wallet connect + sign-in | **Real.** Mobile Wallet Adapter 2.0, Sign In With Solana in one handoff |
-| Staking, zeroSOL, withdrawals | **Real** SPL stake pool transactions (devnet) |
-| Rewards to Shaka | **Real.** 100% epoch fee, minted to the treasury every epoch |
+| Staking, lootSOL, withdrawals | **Real** SPL stake pool transactions (devnet) |
+| Rewards to the treasury | **Real.** 100% epoch fee, minted to the treasury every epoch |
 | Plan entitlement | **Real** Anchor program on devnet |
-| eSIM | **Mock provider** by default; the Shaka sandbox adapter plugs in behind the same interface ([docs/shaka-sandbox.md](docs/shaka-sandbox.md)) |
-| Money | Devnet SOL has no value. The plan unlocks at 0.5 zeroSOL on devnet so anyone can try it |
+| eSIM | **Mock provider** by default; a real eSIM provider plugs in behind the same interface ([docs/esim-provider.md](docs/esim-provider.md)) |
+| Money | Devnet SOL has no value. The plan unlocks at 0.5 lootSOL on devnet so anyone can try it |
 
 The app always shows which network and eSIM provider are active.
 
@@ -53,9 +53,9 @@ works on emulators). Anchor 0.31 is only needed to rebuild the program.
 ```bash
 npm install
 npm run localnet                          # terminal 1: validator with 25 s epochs
-CLUSTER=localnet npm run pool:setup       # zeroSOL pool with a 100% fee to the treasury
-npm run program:build && solana program deploy -ul anchor/target/deploy/zero_mobile.so \
-  --program-id keys/program/zero_mobile-keypair.json   # or restart localnet to preload it
+CLUSTER=localnet npm run pool:setup       # lootSOL pool with a 100% fee to the treasury
+npm run program:build && solana program deploy -ul anchor/target/deploy/mobiloot.so \
+  --program-id keys/program/mobiloot-keypair.json   # or restart localnet to preload it
 CLUSTER=localnet npm -w ops run setup:program
 CLUSTER=localnet npm run api              # terminal 2: API on :8787, mock eSIM provider
 
@@ -64,7 +64,7 @@ adb reverse tcp:8787 tcp:8787 && adb reverse tcp:8899 tcp:8899
 npm run android                           # builds and installs the debug app
 ```
 
-Watch rewards reach Shaka: `CLUSTER=localnet npm run pool:status`.
+Watch rewards reach the treasury: `CLUSTER=localnet npm run pool:status`.
 
 ### Devnet
 
@@ -80,7 +80,7 @@ EXPO_PUBLIC_API_URL=https://<your-api-host> npm --prefix app run android
 npm test          # client/IDL checks, localnet end-to-end (if running), API
 ```
 
-The localnet suite covers deposits minting zeroSOL 1:1, activation, double
+The localnet suite covers deposits minting lootSOL 1:1, activation, double
 activation, insufficient stake, someone else's token account, wrong period and
 full-principal withdrawal. The API suite covers SIWS (replay, forged
 signatures, wrong domain or chain, expiry), rate limiting, entitlement gating,
@@ -92,24 +92,29 @@ masking, and suspending a line when its stake is moved away (relay attack).
 | | |
 | --- | --- |
 | [`app/`](app) | Android app (Expo, React Native, MWA) |
-| [`anchor/`](anchor) | `zero_mobile` program and IDL |
+| [`anchor/`](anchor) | `mobiloot` program and IDL |
 | [`api/`](api) | Backend: SIWS, entitlement checks, eSIM provisioning, pool stats |
 | [`shared/`](shared) | Stake pool and program clients shared by all of the above |
 | [`ops/`](ops) | Pool setup, epoch crank, rebalance, status |
-| [`docs/`](docs) | [Architecture](docs/architecture.md), [economics](docs/economics.md), [threat model](docs/threat-model.md), [Shaka sandbox](docs/shaka-sandbox.md), [demo script](docs/demo-script.md), [next steps](docs/next-steps.md) |
+| [`docs/`](docs) | [Architecture](docs/architecture.md), [economics](docs/economics.md), [threat model](docs/threat-model.md), [eSIM provider](docs/esim-provider.md), [demo script](docs/demo-script.md), [next steps](docs/next-steps.md) |
 
 ## Addresses
 
 | | Devnet | Localnet |
 | --- | --- | --- |
-| `zero_mobile` program | `ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp` | same |
+| `mobiloot` program | `ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp` | same |
 | Stake pool program | `SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY` (Sanctum's SPL deployment) | same, preloaded |
-| zeroSOL pool, mint, treasury | see [`config/devnet.json`](config) | generated by `pool:setup` |
+| lootSOL pool, mint, treasury | see [`config/devnet.json`](config) | generated by `pool:setup` |
 
 ## About
 
-Zero Mobile is a Shaka project, created for Clock In in September 2026. It
+Mobiloot is built by Charlie Newman, created for Clock In in September 2026. It
 builds on the Solana Mobile `web3js-expo-minimal` template and the SPL stake
 pool program.
 
 Licence: MIT.
+
+Disclosure: the first real eSIM adapter targets [Shaka](https://shaka.tel)'s
+wholesale API, which is open to any developer. Charlie is a minority
+shareholder in Shaka. Mobiloot is an independent personal project and is not
+run or funded by Shaka.

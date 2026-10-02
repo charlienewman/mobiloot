@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Zero Mobile",
-    "slug": "zero-mobile",
+    "name": "Mobiloot",
+    "slug": "mobiloot",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "zeromobile",
+    "scheme": "mobiloot",
     "userInterfaceStyle": "dark",
     "ios": {
-      "bundleIdentifier": "tel.shaka.zero"
+      "bundleIdentifier": "com.mobiloot.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +18,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "tel.shaka.zero",
+      "package": "com.mobiloot.app",
       "versionCode": 1
     },
     "plugins": [

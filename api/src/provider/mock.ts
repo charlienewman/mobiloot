@@ -20,7 +20,7 @@ export class MockProvider implements MobileProvider {
           .toString()
           .padStart(15, '0')
           .slice(0, 15),
-      activationCode: `LPA:1$rsp.mock.zero.invalid$ZM-${digest(id + 'm')
+      activationCode: `LPA:1$rsp.mock.mobiloot.invalid$ZM-${digest(id + 'm')
         .slice(0, 20)
         .toUpperCase()}`,
     }

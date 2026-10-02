@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-zero_mobile = "ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp"
+mobiloot = "ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp"
 
 [registry]
 url = "https://api.apr.dev"

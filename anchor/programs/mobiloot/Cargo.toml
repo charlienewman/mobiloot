@@ -1,5 +1,5 @@
 [package]
-name = "zero_mobile"
+name = "mobiloot"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
@@ -7,7 +7,7 @@ rust-version = "1.79"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "zero_mobile"
+name = "mobiloot"
 
 [features]
 default = []

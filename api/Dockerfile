@@ -1,4 +1,4 @@
-# Build from the repository root:  docker build -f api/Dockerfile -t zero-api .
+# Build from the repository root:  docker build -f api/Dockerfile -t mobiloot-api .
 FROM node:22-slim
 WORKDIR /srv
 COPY package.json package-lock.json ./
@@ -9,7 +9,7 @@ RUN npm ci --omit=dev --workspaces --include-workspace-root && npm i --no-save t
 COPY shared shared
 COPY api/src api/src
 COPY config config
-ENV NODE_ENV=production PORT=8787 HOST=0.0.0.0 DB_PATH=/data/zero.db
+ENV NODE_ENV=production PORT=8787 HOST=0.0.0.0 DB_PATH=/data/mobiloot.db
 VOLUME /data
 EXPOSE 8787
 # CLUSTER, SIGN_IN_DOMAIN and optionally CRANK_KEYPAIR (a mounted keypair file) come from the host.

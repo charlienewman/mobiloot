@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons'
 import * as WebBrowser from 'expo-web-browser'
 import { ActivityIndicator, Modal, Pressable, View } from 'react-native'
-import { useZero } from '@/features/config'
+import { useMobiloot } from '@/features/config'
 import type { TxState } from '@/features/transactions'
 import { colors, radius, space } from '@/constants/theme'
 import { Button, Row, Stack, Text } from './ui'
@@ -29,7 +29,7 @@ export function TxSheet({
   onClose: () => void
   successNote?: string
 }) {
-  const { explorer } = useZero()
+  const { explorer } = useMobiloot()
   const visible = state.step !== 'idle'
   const current = STEPS.findIndex((s) => s.key === state.step)
   const finished = state.step === 'done' || state.step === 'error'
