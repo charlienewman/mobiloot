@@ -1,18 +1,17 @@
 // Keeps the pool updated each epoch. Anyone can do this; the API does it so deposits
 // never hit a stale pool and rewards reach the Mobiloot treasury promptly.
-import fs from 'node:fs'
 import { Keypair, Transaction, sendAndConfirmTransaction } from '@solana/web3.js'
 import { fetchStakePool, fetchValidatorList, updateIxs } from '@mobiloot/shared'
 import { connection, stakePoolAddress } from './chain'
-import { crankKeypairPath } from './env'
+import { crankSecretKey } from './env'
 
 export function startCrank(log: { info: (o: object, m: string) => void; warn: (o: object, m: string) => void }) {
-  const file = crankKeypairPath()
-  if (!file || !fs.existsSync(file)) {
-    log.info({}, 'pool crank disabled (no CRANK_KEYPAIR)')
+  const secret = crankSecretKey()
+  if (!secret) {
+    log.info({}, 'pool crank disabled (no CRANK_KEYPAIR or CRANK_KEYPAIR_JSON)')
     return () => {}
   }
-  const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync(file, 'utf8'))))
+  const payer = Keypair.fromSecretKey(secret)
   let running = false
   const tick = async () => {
     if (running) return

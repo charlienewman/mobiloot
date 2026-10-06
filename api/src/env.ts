@@ -21,6 +21,8 @@ const Env = z.object({
   SHAKA_SANDBOX_API_KEY: z.string().optional(),
   /** Keypair that pays for permissionless pool updates. Unset disables the crank. */
   CRANK_KEYPAIR: z.string().optional(),
+  /** The same keypair as a JSON byte array, for hosts that only take env vars (Railway). */
+  CRANK_KEYPAIR_JSON: z.string().optional(),
   SOL_USD_FALLBACK: z.coerce.number().default(150),
   MAINNET_RPC_URL: z.string().default('https://api.mainnet-beta.solana.com'),
   /** Mainnet-like staking yield used where a test cluster cannot measure one. */
@@ -35,7 +37,15 @@ export const cluster: ClusterConfig = JSON.parse(
 )
 export const rpcUrl = env.RPC_URL ?? cluster.rpcUrl
 
-export function crankKeypairPath(): string | undefined {
+function crankKeypairPath(): string | undefined {
   if (env.CRANK_KEYPAIR) return env.CRANK_KEYPAIR.replace(/^~/, os.homedir())
   return env.CLUSTER === 'localnet' ? path.join(os.homedir(), '.config/solana/id.json') : undefined
+}
+
+/** The crank's secret key bytes, from CRANK_KEYPAIR_JSON or the CRANK_KEYPAIR file. */
+export function crankSecretKey(): Uint8Array | undefined {
+  if (env.CRANK_KEYPAIR_JSON) return Uint8Array.from(JSON.parse(env.CRANK_KEYPAIR_JSON))
+  const file = crankKeypairPath()
+  if (!file || !fs.existsSync(file)) return undefined
+  return Uint8Array.from(JSON.parse(fs.readFileSync(file, 'utf8')))
 }

@@ -10,7 +10,8 @@ COPY shared shared
 COPY api/src api/src
 COPY config config
 ENV NODE_ENV=production PORT=8787 HOST=0.0.0.0 DB_PATH=/data/mobiloot.db
-VOLUME /data
+# Mount a persistent volume at /data (Railway rejects the VOLUME instruction).
 EXPOSE 8787
-# CLUSTER, SIGN_IN_DOMAIN and optionally CRANK_KEYPAIR (a mounted keypair file) come from the host.
+# CLUSTER, SIGN_IN_DOMAIN and optionally CRANK_KEYPAIR (a mounted keypair file) or
+# CRANK_KEYPAIR_JSON (its contents) come from the host.
 CMD ["npx", "tsx", "api/src/server.ts"]
