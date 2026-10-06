@@ -24,9 +24,10 @@ APK=app/build/outputs/apk/release/app-release-unsigned.apk
 [[ -f $APK ]] || APK=app/build/outputs/apk/release/app-release.apk
 OUT="$ROOT/dist/mobiloot-$(node -p "require('$ROOT/app/app.json').expo.version").apk"
 mkdir -p "$ROOT/dist"
-"$ANDROID_HOME"/build-tools/*/zipalign -f -p 4 "$APK" "$OUT.aligned"
-"$(ls -d "$ANDROID_HOME"/build-tools/* | tail -1)"/apksigner sign --ks "$KS" --ks-key-alias mobiloot \
+BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+"$BT"/zipalign -f -p 4 "$APK" "$OUT.aligned"
+"$BT"/apksigner sign --ks "$KS" --ks-key-alias mobiloot \
   --ks-pass env:MOBILOOT_KEYSTORE_PASSWORD --key-pass env:MOBILOOT_KEYSTORE_PASSWORD --out "$OUT" "$OUT.aligned"
 rm "$OUT.aligned"
-"$(ls -d "$ANDROID_HOME"/build-tools/* | tail -1)"/apksigner verify --print-certs "$OUT" | head -3
+"$BT"/apksigner verify --print-certs "$OUT" | head -3
 sha256sum "$OUT"
