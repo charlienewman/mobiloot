@@ -1,0 +1,15 @@
+{
+  "cluster": "devnet",
+  "rpcUrl": "https://api.devnet.solana.com",
+  "stakePoolProgram": "SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY",
+  "stakePool": "7NG5VLba8pt4YyV4jjVDb6c7zmF5ZxgwG5WJgNdXz8uZ",
+  "poolMint": "65NoaJNtu6VGe3bJds8NmJoBv8uPCjY9QNnJuLY4EUCf",
+  "reserveStake": "4foKjVn2HUQAa4v96MVwcsgkwJfxAQm2fhBkiHenxCx4",
+  "validatorList": "2BFKLeCqtrXfnteM8bLXUfVw6GG4Ja2adQHBtAX9uNiU",
+  "treasury": "HUsDBeAwAY24YvSnAgxovrbbDPFfVnHHWxa8wYmPfv5q",
+  "treasuryFeeAccount": "A7L5uj68gyHuHKtb5ZXjsbrn2EencavRyBoRzqhYUDKX",
+  "validatorVotes": [
+    "APsEUZJjrb58KCS6z7rJJAmXB76b9bfAigjDzG242xhr"
+  ],
+  "mobilootProgram": "ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp"
+}

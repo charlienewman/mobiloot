@@ -66,7 +66,9 @@ async function createPool() {
   // The pool program requires the reserve to hold strictly more than its rent exemption.
   const reserveLamports = (await rent(StakeProgram.space)) + 1
 
-  await send(
+  if (await connection.getAccountInfo(reserveKp.publicKey)) {
+    console.log('• reserve, mint and treasury fee account exist')
+  } else await send(
     'create reserve, mint and treasury fee account',
     [
       ...StakeProgram.createAccount({
@@ -87,6 +89,18 @@ async function createPool() {
     ],
     [reserveKp, mintKp],
   )
+
+  // The stake program records its own rent_exempt_reserve in the account (Meta, after the
+  // u32 state tag), which can exceed the RPC's rent figure: devnet lowered rent but stake
+  // accounts still record 2,282,880. The pool checks against the recorded value.
+  const reserveInfo = (await connection.getAccountInfo(reserveKp.publicKey))!
+  const recordedReserve = reserveInfo.data.readBigUInt64LE(4)
+  const shortfall = recordedReserve + 1n - BigInt(reserveInfo.lamports)
+  if (shortfall > 0n) {
+    await send(`top up reserve by ${shortfall} lamports to its recorded rent exemption`, [
+      SystemProgram.transfer({ fromPubkey: payer.publicKey, toPubkey: reserveKp.publicKey, lamports: shortfall }),
+    ])
+  }
 
   const listSize = validatorListSize(MAX_VALIDATORS)
   await send(
