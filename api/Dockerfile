@@ -14,4 +14,5 @@ ENV NODE_ENV=production PORT=8787 HOST=0.0.0.0 DB_PATH=/data/mobiloot.db
 EXPOSE 8787
 # CLUSTER, SIGN_IN_DOMAIN and optionally CRANK_KEYPAIR (a mounted keypair file) or
 # CRANK_KEYPAIR_JSON (its contents) come from the host.
-CMD ["npx", "tsx", "api/src/server.ts"]
+# Run node directly (not via npx) so it receives SIGTERM and can exit cleanly.
+CMD ["node", "--import", "tsx", "api/src/server.ts"]

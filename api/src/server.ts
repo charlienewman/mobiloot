@@ -39,7 +39,18 @@ const sweep = setInterval(async () => {
 app.addHook('onClose', async () => {
   stopCrank()
   clearInterval(sweep)
+  db.close()
 })
+
+// Hosts stop the container with SIGTERM on every redeploy; exit cleanly so it isn't
+// reported as a crash.
+for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+  process.once(signal, async () => {
+    app.log.info({ signal }, 'shutting down')
+    await app.close()
+    process.exit(0)
+  })
+}
 
 await app.listen({ port: env.PORT, host: env.HOST })
 app.log.info({ cluster: cluster.cluster, provider: env.PROVIDER_MODE }, 'Mobiloot API ready')
