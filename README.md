@@ -87,6 +87,14 @@ signatures, wrong domain or chain, expiry), rate limiting, entitlement gating,
 idempotent provisioning under concurrency, outage recovery, activation-code
 masking, and suspending a line when its stake is moved away (relay attack).
 
+Against a live deployment, the smoke test runs 39 happy and sad path checks
+through the real API and the real programs (sign-in forgery and replay, every
+program rejection, eSIM ordering, deposit and withdraw, suspension and resume):
+
+```bash
+CLUSTER=devnet API_URL=https://<your-api-host> npm -w ops run smoke
+```
+
 ## Repository
 
 | | |
