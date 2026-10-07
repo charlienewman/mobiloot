@@ -108,10 +108,21 @@ export function describeWalletError(e: any): string {
   if (/ERROR_WALLET_NOT_FOUND|no installed wallet|Found no installed wallet/i.test(msg)) {
     return 'No Solana wallet found. Install a Mobile Wallet Adapter wallet (Seed Vault, Phantom or Solflare) and try again.'
   }
-  if (/declined|rejected|cancel|ERROR_AUTHORIZATION_FAILED|ERROR_NOT_SIGNED|CancellationException/i.test(msg)) {
+  // Mobile Wallet Adapter protocol errors arrive as "<code>/<message>": -1 authorization
+  // failed, -3 not signed (declined), -4 not submitted.
+  if (/^-1\/|authorization request failed/i.test(msg)) return "Sign-in wasn't approved in your wallet. Try again when you're ready."
+  if (/declined|rejected|cancel|ERROR_AUTHORIZATION_FAILED|ERROR_NOT_SIGNED|CancellationException|^-3\//i.test(msg)) {
     return 'Request cancelled in your wallet.'
   }
+  if (/not submitted|ERROR_NOT_SUBMITTED|^-4\//i.test(msg)) {
+    return "Your wallet couldn't send the transaction. Check your connection and try again."
+  }
+  if (/TimeoutException|Timed out waiting/i.test(msg)) {
+    return "Your wallet didn't respond in time. Open it, then try again."
+  }
   if (/blockhash|expired/i.test(msg)) return 'The request expired before it was confirmed. Please try again.'
+  // Native exception text (java.*, kotlin.*) means nothing to people; keep it for logs only.
+  if (/\b(java|kotlin|android)\.[a-z]+\./.test(msg)) return 'Something went wrong with your wallet. Please try again.'
   return msg.length < 160 ? msg : 'Something went wrong. Please try again.'
 }
 

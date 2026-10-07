@@ -7,7 +7,8 @@
     "crank": "tsx src/crank.ts",
     "status": "tsx src/status.ts",
     "setup:program": "tsx src/setup-program.ts",
-    "rebalance": "tsx src/rebalance.ts"
+    "rebalance": "tsx src/rebalance.ts",
+    "smoke": "tsx src/smoke.ts"
   },
   "dependencies": {
     "@mobiloot/shared": "*"
