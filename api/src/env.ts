@@ -28,6 +28,11 @@ const Env = z.object({
   SHAKA_REFERENCE_PREFIX: z.string().optional(),
   /** Wallets (comma or space separated) that get real eSIMs; everyone else gets the mock. */
   LIVE_ESIM_WALLETS: z.string().optional(),
+  /**
+   * Wallets (comma or space separated) that may order an eSIM without staking, for
+   * testing provisioning on its own. Their lines are never suspended for low stake.
+   */
+  TEST_GRANT_WALLETS: z.string().optional(),
   /** Keypair that pays for permissionless pool updates. Unset disables the crank. */
   CRANK_KEYPAIR: z.string().optional(),
   /** The same keypair as a JSON byte array, for hosts that only take env vars (Railway). */

@@ -89,6 +89,8 @@ export interface Me {
   address: string
   /** This wallet gets a real eSIM rather than the demo one. */
   liveEsim?: boolean
+  /** Allowed an eSIM without staking, for testing. */
+  testGrant?: boolean
   period: string
   holdings: { poolTokens: string; stakeLamports: string }
   entitlement?: { address: string; period: string; planCode: string; stakeLamports: string; activatedAt: number }

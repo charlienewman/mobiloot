@@ -12,15 +12,17 @@ export interface CoverageDeps {
   db: Db
   providerByMode(mode: string): MobileProvider | undefined
   fetchHoldings(owner: PublicKey): Promise<{ stakeLamports: bigint }>
+  /** Test-grant wallets, whose lines stand without stake. */
+  exempt?(address: string): boolean
 }
 
-export function createCoverage({ db, providerByMode, fetchHoldings }: CoverageDeps) {
+export function createCoverage({ db, providerByMode, fetchHoldings, exempt }: CoverageDeps) {
   /** Applies the rule to one order given the wallet's current stake; returns the updated row. */
   async function apply(order: OrderRow, stakeLamports: bigint, minLamports: bigint): Promise<OrderRow> {
     if (order.status !== 'ready' || !order.provider_order_id) return order
     const provider = providerByMode(order.provider_mode)
     if (!provider) return order
-    const covered = stakeLamports >= minLamports
+    const covered = stakeLamports >= minLamports || Boolean(exempt?.(order.address))
     if (!covered && !order.suspended_at) {
       await provider.suspend?.(order.provider_order_id)
       db.prepare('UPDATE orders SET suspended_at = ?, updated_at = ? WHERE id = ?').run(

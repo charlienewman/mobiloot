@@ -21,6 +21,8 @@ export interface Deps {
   /** Real eSIMs, for allowlisted wallets only. */
   live?: MobileProvider & { noteEvent?(event: Record<string, any>): boolean; reconcileDue?(): Promise<unknown> }
   liveWallets?: Set<string>
+  /** Wallets that may order an eSIM without staking (testing only). */
+  testWallets?: Set<string>
   shakaWebhookSecret?: string
   cluster: {
     cluster: string
@@ -46,7 +48,8 @@ export function buildApp(deps: Deps) {
   const providerFor = (address: string) => (deps.live && deps.liveWallets?.has(address) ? deps.live : provider)
   const providerByMode = (mode: string) =>
     deps.live?.mode === mode ? deps.live : provider.mode === mode ? provider : undefined
-  const coverage = createCoverage({ db, providerByMode, fetchHoldings: deps.fetchHoldings })
+  const testGrant = (address: string) => Boolean(deps.testWallets?.has(address))
+  const coverage = createCoverage({ db, providerByMode, fetchHoldings: deps.fetchHoldings, exempt: testGrant })
   const app = Fastify({
     logger: {
       level: process.env.LOG_LEVEL ?? 'info',
@@ -154,6 +157,7 @@ export function buildApp(deps: Deps) {
       return {
         address: owner.toBase58(),
         liveEsim: providerFor(owner.toBase58()) !== provider,
+        testGrant: testGrant(owner.toBase58()),
         period: period.toString(),
         holdings: {
           poolTokens: holdings.poolTokens.toString(),
@@ -178,14 +182,17 @@ export function buildApp(deps: Deps) {
       const owner = requireWallet(req)
       const config = await deps.fetchMobilootConfig()
       const period = await deps.currentPeriod(config)
-      const entitlement = await deps.fetchEntitlement(owner, period)
-      if (!entitlement || !entitlement.owner.equals(owner))
-        throw new HttpError(403, 'No active plan for this period. Activate it first.')
-      const holdings = await deps.fetchHoldings(owner)
-      if (holdings.stakeLamports < config.minStakeLamports)
-        throw new HttpError(403, 'Your lootSOL balance no longer covers the plan.')
-
       const address = owner.toBase58()
+      const entitlement = await deps.fetchEntitlement(owner, period)
+      const holdings = await deps.fetchHoldings(owner)
+      // A test grant stands in for the on-chain entitlement and the stake behind it.
+      if (!testGrant(address)) {
+        if (!entitlement || !entitlement.owner.equals(owner))
+          throw new HttpError(403, 'No active plan for this period. Activate it first.')
+        if (holdings.stakeLamports < config.minStakeLamports)
+          throw new HttpError(403, 'Your lootSOL balance no longer covers the plan.')
+      }
+
       const lineProvider = providerFor(address)
       const existing = await refreshOrder(findOrder(address, period))
       if (existing?.status === 'ready')
@@ -201,8 +208,8 @@ export function buildApp(deps: Deps) {
           id,
           address,
           Number(period),
-          entitlement.planCode,
-          entitlement.address.toBase58(),
+          entitlement?.planCode ?? PLANS[0].code,
+          entitlement?.address.toBase58() ?? 'test-grant',
           lineProvider.mode,
           now,
           now,

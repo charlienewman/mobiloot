@@ -33,7 +33,7 @@ export default function Home() {
   const stakeLamports = Number(me.data?.holdings.stakeLamports ?? 0)
   const funding = useFunding(stakeLamports)
   const unlocked = stakeLamports >= Number(config.minStakeLamports)
-  const active = Boolean(me.data?.entitlement)
+  const active = Boolean(me.data?.entitlement || me.data?.testGrant)
   const esimReady = me.data?.esim?.status === 'ready'
   const suspended = Boolean(me.data?.esim?.suspended)
   const usage = useUsage(esimReady)
@@ -83,6 +83,7 @@ export default function Home() {
 
       <PlanCard
         active={active}
+        testGrant={Boolean(me.data?.testGrant && !me.data.entitlement)}
         esimReady={esimReady}
         suspended={suspended}
         unlocked={unlocked}
@@ -136,6 +137,7 @@ export default function Home() {
 
 function PlanCard(props: {
   active: boolean
+  testGrant: boolean
   esimReady: boolean
   suspended: boolean
   unlocked: boolean
@@ -206,7 +208,11 @@ function PlanCard(props: {
           <Feather name="check-circle" size={20} color={colors.lime} />
           <Text variant="heading">Plan active for this period</Text>
         </Row>
-        <Text color={colors.textMuted}>Your entitlement is on-chain. Get your eSIM to start using it.</Text>
+        <Text color={colors.textMuted}>
+          {props.testGrant
+            ? 'Test access: this wallet can get an eSIM without staking.'
+            : 'Your entitlement is on-chain. Get your eSIM to start using it.'}
+        </Text>
         <Button title="Get my eSIM" onPress={() => props.onGo('/(tabs)/plan')} />
       </Card>
     )

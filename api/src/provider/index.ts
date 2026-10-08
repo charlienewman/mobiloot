@@ -9,15 +9,21 @@ export interface Providers {
   mock: MobileProvider
   live?: ShakaLiveProvider
   liveWallets: Set<string>
+  /** Wallets that may order without staking (TEST_GRANT_WALLETS). */
+  testWallets: Set<string>
 }
 
-export function createProviders(db: Db): Providers {
-  const liveWallets = new Set(
-    (env.LIVE_ESIM_WALLETS ?? '')
+const walletSet = (list: string | undefined) =>
+  new Set(
+    (list ?? '')
       .split(/[\s,]+/)
       .map((w) => w.trim())
       .filter(Boolean),
   )
+
+export function createProviders(db: Db): Providers {
+  const liveWallets = walletSet(env.LIVE_ESIM_WALLETS)
+  const testWallets = walletSet(env.TEST_GRANT_WALLETS)
   const live = env.SHAKA_API_KEY
     ? new ShakaLiveProvider(db, {
         baseUrl: env.SHAKA_BASE_URL,
@@ -27,6 +33,6 @@ export function createProviders(db: Db): Providers {
         webhookUrl: env.SHAKA_WEBHOOK_URL || undefined,
       })
     : undefined
-  return { mock: new MockProvider(), live, liveWallets }
+  return { mock: new MockProvider(), live, liveWallets, testWallets }
 }
 export type { MobileProvider } from './types'

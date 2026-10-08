@@ -16,6 +16,7 @@ const app = buildApp({
   provider: providers.mock,
   live: providers.live,
   liveWallets: providers.liveWallets,
+  testWallets: providers.testWallets,
   shakaWebhookSecret: env.SHAKA_WEBHOOK_SECRET,
   cluster,
   signInDomain: env.SIGN_IN_DOMAIN,
@@ -31,7 +32,12 @@ const app = buildApp({
 const stopCrank = startCrank(app.log)
 
 // Re-check every active line's coverage each minute (see coverage.ts).
-const coverage = createCoverage({ db, providerByMode, fetchHoldings })
+const coverage = createCoverage({
+  db,
+  providerByMode,
+  fetchHoldings,
+  exempt: (address) => providers.testWallets.has(address),
+})
 const sweep = setInterval(async () => {
   try {
     const config = await fetchMobilootConfig()
@@ -78,6 +84,11 @@ for (const signal of ['SIGTERM', 'SIGINT'] as const) {
 
 await app.listen({ port: env.PORT, host: env.HOST })
 app.log.info(
-  { cluster: cluster.cluster, liveEsim: Boolean(providers.live), liveWallets: providers.liveWallets.size },
+  {
+    cluster: cluster.cluster,
+    liveEsim: Boolean(providers.live),
+    liveWallets: providers.liveWallets.size,
+    testWallets: providers.testWallets.size,
+  },
   'Mobiloot API ready',
 )

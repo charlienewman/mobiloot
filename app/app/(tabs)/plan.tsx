@@ -27,6 +27,7 @@ export default function Plan() {
   const stake = Number(me.data?.holdings.stakeLamports ?? 0)
   const min = Number(config.minStakeLamports)
   const entitlement = me.data?.entitlement
+  const testGrant = Boolean(me.data?.testGrant)
   const esim = me.data?.esim
 
   return (
@@ -36,7 +37,7 @@ export default function Plan() {
 
       {me.isLoading ? (
         <ActivityIndicator color={colors.lime} />
-      ) : !entitlement ? (
+      ) : !entitlement && !testGrant ? (
         stake >= min ? (
           <Card>
             <Text variant="heading">Activate for this period</Text>
@@ -66,7 +67,7 @@ export default function Plan() {
       ) : esim?.status === 'ready' ? (
         <EsimReady order={esim} />
       ) : (
-        <Provisioning entitlementAddress={entitlement.address} order={esim} />
+        <Provisioning entitlementAddress={entitlement?.address} order={esim} />
       )}
 
       <TxSheet
@@ -113,7 +114,8 @@ function Feature({ icon, label }: { icon: React.ComponentProps<typeof Feather>['
   )
 }
 
-function Provisioning({ entitlementAddress, order }: { entitlementAddress: string; order?: EsimOrder }) {
+/** `entitlementAddress` is absent for a test-grant wallet, which orders without staking. */
+function Provisioning({ entitlementAddress, order }: { entitlementAddress?: string; order?: EsimOrder }) {
   const { token } = useSession()
   const { explorer, config } = useMobiloot()
   const queryClient = useQueryClient()
@@ -127,7 +129,10 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
   const failed = provision.isError || order?.status === 'failed'
   const ordered = order?.status === 'pending'
   const steps = [
-    { label: 'Plan entitlement confirmed on Solana', done: true },
+    {
+      label: entitlementAddress ? 'Plan entitlement confirmed on Solana' : 'Test access granted (no stake needed)',
+      done: true,
+    },
     {
       label: (order?.providerMode ?? config.providerMode) === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered',
       done: ordered,
@@ -154,21 +159,23 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
           </Row>
         ))}
       </Stack>
-      <Pressable
-        onPress={() => WebBrowser.openBrowserAsync(explorer(`address/${entitlementAddress}`))}
-        accessibilityRole="link"
-      >
-        <Row gap={6}>
-          <Feather name="external-link" size={14} color={colors.textMuted} />
-          <Text variant="small" color={colors.textMuted}>
-            View entitlement on Solana Explorer
-          </Text>
-        </Row>
-      </Pressable>
+      {entitlementAddress ? (
+        <Pressable
+          onPress={() => WebBrowser.openBrowserAsync(explorer(`address/${entitlementAddress}`))}
+          accessibilityRole="link"
+        >
+          <Row gap={6}>
+            <Feather name="external-link" size={14} color={colors.textMuted} />
+            <Text variant="small" color={colors.textMuted}>
+              View entitlement on Solana Explorer
+            </Text>
+          </Row>
+        </Pressable>
+      ) : null}
       {failed ? (
         <Notice tone="danger">
-          {(provision.error as Error)?.message ?? order?.error ?? 'The eSIM order failed.'} Your plan is safe on-chain;
-          try again.
+          {(provision.error as Error)?.message ?? order?.error ?? 'The eSIM order failed.'}{' '}
+          {entitlementAddress ? 'Your plan is safe on-chain; try again.' : 'Try again.'}
         </Notice>
       ) : null}
       {ordered ? (

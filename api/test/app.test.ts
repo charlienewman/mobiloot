@@ -35,6 +35,7 @@ function setup() {
   const deps: Deps = {
     db: openDb(':memory:'),
     provider,
+    testWallets: new Set(),
     cluster: {
       cluster: 'localnet',
       rpcUrl: 'http://x',
@@ -279,6 +280,26 @@ describe('eSIM provisioning', () => {
     assert.deepEqual(result, { checked: 1, changed: 1, lapsed: 0 })
     const row = ctx.deps.db.prepare('SELECT suspended_at FROM orders').get() as { suspended_at: number | null }
     assert.ok(row.suspended_at)
+  })
+
+  test('a test-grant wallet gets an eSIM without staking, and its line is never suspended', async () => {
+    ctx.deps.testWallets!.add(kp.publicKey.toBase58())
+    const order = (await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })).json()
+    assert.equal(order.status, 'ready')
+    const me = (await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: auth })).json()
+    assert.equal(me.testGrant, true)
+    assert.equal(me.entitlement, undefined)
+    assert.equal(me.esim.suspended, false)
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/esim/reveal', headers: auth })).statusCode, 200)
+    const row = ctx.deps.db.prepare('SELECT entitlement FROM orders').get() as { entitlement: string }
+    assert.equal(row.entitlement, 'test-grant')
+    // Everyone else still needs a stake.
+    const other = Keypair.generate()
+    const s = await signIn(ctx.app, other)
+    const token = (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).json()
+      .token
+    const res = await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: { authorization: `Bearer ${token}` } })
+    assert.equal(res.statusCode, 403)
   })
 
   test('a provider outage leaves the order retryable', async () => {

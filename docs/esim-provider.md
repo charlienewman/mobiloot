@@ -68,9 +68,12 @@ SHAKA_PLAN_ID=58               # Shaka plan behind Mobiloot Unlimited (default)
 SHAKA_WEBHOOK_URL=https://<api host>/v1/webhooks/shaka   # optional
 SHAKA_REFERENCE_PREFIX=mobiloot-devnet                   # default: mobiloot-<cluster>
 LIVE_ESIM_WALLETS=<wallet>,<wallet>
+TEST_GRANT_WALLETS=<wallet>    # optional: may order without staking, for testing
 ```
 
-With `SHAKA_API_KEY` unset, everyone gets the mock. `npm test` uses an in-memory fake
+With `SHAKA_API_KEY` unset, everyone gets the mock. A `TEST_GRANT_WALLETS` wallet skips
+the entitlement and stake checks, and its line is never suspended for low stake. Use it
+to test provisioning on its own, then remove it. `npm test` uses an in-memory fake
 Shaka (`api/test/shaka.test.ts`) and never touches real stock.
 
 ## Operations
