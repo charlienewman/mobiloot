@@ -4,12 +4,19 @@ import { api, ApiError, type Me, type PoolStats, type Usage } from './api'
 import { useMobiloot } from './config'
 import { useSession } from './session'
 
-function useAuthed<T>(key: string, path: string, opts: { enabled?: boolean; refetchInterval?: number } = {}) {
+function useAuthed<T>(
+  key: string,
+  path: string,
+  opts: { enabled?: boolean; refetchInterval?: number | ((data: T | undefined) => number) } = {},
+) {
   const { token, invalidate } = useSession()
   return useQuery({
     queryKey: [key, token],
     enabled: Boolean(token) && (opts.enabled ?? true),
-    refetchInterval: opts.refetchInterval,
+    refetchInterval:
+      typeof opts.refetchInterval === 'function'
+        ? (q) => (opts.refetchInterval as (d: T | undefined) => number)(q.state.data)
+        : opts.refetchInterval,
     queryFn: async () => {
       try {
         return await api<T>(path, { token })
@@ -21,7 +28,9 @@ function useAuthed<T>(key: string, path: string, opts: { enabled?: boolean; refe
   })
 }
 
-export const useMe = () => useAuthed<Me>('me', '/v1/me', { refetchInterval: 30_000 })
+// Poll quickly while a live eSIM is being set up on the network.
+export const useMe = () =>
+  useAuthed<Me>('me', '/v1/me', { refetchInterval: (me) => (me?.esim?.status === 'pending' ? 4_000 : 30_000) })
 
 export function useUsage(enabled: boolean) {
   return useAuthed<Usage>('usage', '/v1/usage', { enabled, refetchInterval: 60_000 })

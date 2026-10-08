@@ -81,7 +81,7 @@ export default function Account() {
         <KeyValue label="Network" value={config.cluster} />
         <KeyValue label="RPC" value={config.rpcUrl.replace(/^https?:\/\//, '')} mono />
         <KeyValue label="API" value={API_URL.replace(/^https?:\/\//, '')} mono />
-        <KeyValue label="eSIM provider" value={config.providerMode === 'mock' ? 'Mock (demo)' : 'Shaka sandbox'} />
+        <KeyValue label="eSIM provider" value={me.data?.liveEsim ? 'Shaka (live)' : 'Mock (demo)'} />
         <KeyValue label="Program" value={shortAddress(config.mobilootProgram, 6)} mono />
         <KeyValue label="Stake pool" value={shortAddress(config.stakePool, 6)} mono />
       </Card>

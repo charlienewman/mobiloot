@@ -141,7 +141,7 @@ function PlanCard(props: {
   unlocked: boolean
   stakeLamports: number
   renewsIn: number
-  usage?: { dataUsedMb: number; dataTotalMb: number; minutesUsed: number; textsUsed: number }
+  usage?: { dataUsedMb: number; dataTotalMb: number | null; minutesUsed: number; textsUsed: number }
   onGo: (tab: '/(tabs)/plan' | '/(tabs)/stake') => void
 }) {
   const { config } = useMobiloot()
@@ -183,10 +183,12 @@ function PlanCard(props: {
                 Data
               </Text>
               <Text variant="small">
-                {mb(u.dataUsedMb)} of {mb(u.dataTotalMb)}
+                {u.dataTotalMb == null
+                  ? `${mb(u.dataUsedMb)} used · unlimited`
+                  : `${mb(u.dataUsedMb)} of ${mb(u.dataTotalMb)}`}
               </Text>
             </Row>
-            <ProgressBar value={u.dataUsedMb / u.dataTotalMb} />
+            {u.dataTotalMb == null ? null : <ProgressBar value={u.dataUsedMb / u.dataTotalMb} />}
             <Text variant="small" color={colors.textMuted}>
               {u.minutesUsed} min · {u.textsUsed} texts this period
             </Text>
@@ -217,10 +219,7 @@ function PlanCard(props: {
           <Feather name="unlock" size={20} color={colors.lime} />
           <Text variant="heading">Your stake unlocks {config.plan.name}</Text>
         </Row>
-        <Text color={colors.textMuted}>
-          {config.plan.dataGb} GB data, {config.plan.minutes} minutes and {config.plan.texts} texts. Activate it for
-          this period.
-        </Text>
+        <Text color={colors.textMuted}>{planSummary(config.plan)}. Activate it for this period.</Text>
         <Button title="Activate plan" onPress={() => props.onGo('/(tabs)/plan')} />
       </Card>
     )
@@ -242,4 +241,13 @@ function PlanCard(props: {
       ) : null}
     </Card>
   )
+}
+
+function planSummary(p: { dataGb: number | 'unlimited'; minutes: number | 'unlimited'; texts: number | 'unlimited' }) {
+  if (p.dataGb === 'unlimited' && p.minutes === 'unlimited' && p.texts === 'unlimited')
+    return 'Unlimited data, calls and texts'
+  const data = p.dataGb === 'unlimited' ? 'Unlimited data' : `${p.dataGb} GB data`
+  const minutes = p.minutes === 'unlimited' ? 'unlimited minutes' : `${p.minutes} minutes`
+  const texts = p.texts === 'unlimited' ? 'unlimited texts' : `${p.texts} texts`
+  return `${data}, ${minutes} and ${texts}`
 }

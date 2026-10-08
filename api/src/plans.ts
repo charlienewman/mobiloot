@@ -4,7 +4,7 @@ export interface Plan {
   code: string
   name: string
   tagline: string
-  dataGb: number
+  dataGb: number | 'unlimited'
   minutes: 'unlimited' | number
   texts: 'unlimited' | number
   coverage: string
@@ -15,12 +15,12 @@ export interface Plan {
 export const PLANS: Plan[] = [
   {
     code: 'loot-essentials',
-    name: 'Mobiloot Essentials',
-    tagline: 'Everyday data, calls and texts. Paid for by your stake.',
-    dataGb: 10,
+    name: 'Mobiloot Unlimited',
+    tagline: 'Unlimited UK data, calls and texts. Paid for by your stake.',
+    dataGb: 'unlimited',
     minutes: 'unlimited',
     texts: 'unlimited',
-    coverage: 'UK, with EU roaming',
+    coverage: 'UK',
     monthlyCostUsd: 6,
   },
 ]

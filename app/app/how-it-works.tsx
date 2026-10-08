@@ -49,9 +49,9 @@ export default function HowItWorks() {
         <Card tone="raised">
           <Text variant="heading">This is a {config.cluster} demo</Text>
           <Text color={colors.textMuted}>
-            Test SOL has no value, the unlock threshold is lowered so anyone can try it, and the eSIM comes from{' '}
-            {config.providerMode === 'mock' ? 'a mock provider' : "Shaka's sandbox"}. The staking, the pool, the rewards
-            to the treasury and the on-chain entitlement are all real transactions on {config.cluster}.
+            Test SOL has no value and the unlock threshold is lowered so anyone can try it. Most wallets get a mock
+            eSIM; invited testers get a real one on Shaka&apos;s UK network. The staking, the pool, the rewards to the
+            treasury and the on-chain entitlement are all real transactions on {config.cluster}.
           </Text>
         </Card>
       ) : null}

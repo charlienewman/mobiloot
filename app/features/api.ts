@@ -32,7 +32,7 @@ export interface Plan {
   code: string
   name: string
   tagline: string
-  dataGb: number
+  dataGb: number | 'unlimited'
   minutes: 'unlimited' | number
   texts: 'unlimited' | number
   coverage: string
@@ -48,7 +48,8 @@ export interface MobilootConfigResponse {
   poolMint: string
   treasury: string
   mobilootProgram: string
-  providerMode: 'mock' | 'shaka_sandbox'
+  /** Default provider; a wallet's own order says which one actually serves it. */
+  providerMode: 'mock' | 'shaka_live'
   plan: Plan
   minStakeLamports: string
   paused: boolean
@@ -74,7 +75,7 @@ export interface PoolStats {
 export interface EsimOrder {
   id: string
   status: 'pending' | 'ready' | 'failed'
-  providerMode: string
+  providerMode: 'mock' | 'shaka_live'
   planCode: string
   iccidLast4: string | null
   hasActivationCode: boolean
@@ -86,6 +87,8 @@ export interface EsimOrder {
 
 export interface Me {
   address: string
+  /** This wallet gets a real eSIM rather than the demo one. */
+  liveEsim?: boolean
   period: string
   holdings: { poolTokens: string; stakeLamports: string }
   entitlement?: { address: string; period: string; planCode: string; stakeLamports: string; activatedAt: number }
@@ -94,7 +97,8 @@ export interface Me {
 
 export interface Usage {
   dataUsedMb: number
-  dataTotalMb: number
+  /** Null for unlimited data. */
+  dataTotalMb: number | null
   minutesUsed: number
   textsUsed: number
   updatedAt: string
@@ -104,4 +108,7 @@ export interface RevealedEsim {
   activationCode: string
   smdpAddress: string | null
   matchingId: string | null
+  /** Opens Android's own eSIM installer with the code filled in. */
+  androidInstallUrl: string | null
+  msisdn?: string | null
 }

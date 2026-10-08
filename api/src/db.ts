@@ -39,6 +39,45 @@ export function openDb(file: string): Db {
       updated_at INTEGER NOT NULL,
       UNIQUE (address, period, provider_mode)
     );
+    -- One live Shaka line per wallet; see provider/shaka.ts.
+    CREATE TABLE IF NOT EXISTS shaka_lines (
+      id TEXT PRIMARY KEY,
+      address TEXT NOT NULL UNIQUE,
+      plan_id INTEGER NOT NULL,
+      base_url TEXT NOT NULL,
+      subscriber_ref TEXT NOT NULL,
+      subscriber_key TEXT NOT NULL,
+      subscriber_id INTEGER,
+      subscription_ref TEXT NOT NULL UNIQUE,
+      subscription_key TEXT NOT NULL,
+      journey_id TEXT,
+      journey_status TEXT,
+      subscription_id INTEGER UNIQUE,
+      sub_status TEXT,
+      sim_status TEXT,
+      iccid TEXT,
+      state TEXT NOT NULL,
+      suspend_wanted INTEGER NOT NULL DEFAULT 0,
+      suspension_kind TEXT,
+      suspension_seq INTEGER NOT NULL DEFAULT 0,
+      suspension_key TEXT,
+      suspension_journey_id TEXT,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      next_check_at INTEGER NOT NULL,
+      last_error TEXT,
+      last_request_id TEXT,
+      synced_at INTEGER,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    -- Verified Shaka webhook deliveries, for dedupe only (no payloads are kept).
+    CREATE TABLE IF NOT EXISTS shaka_events (
+      idempotency_id TEXT PRIMARY KEY,
+      event_type TEXT,
+      subscription_id INTEGER,
+      ours INTEGER NOT NULL,
+      received_at INTEGER NOT NULL
+    );
   `)
   // Databases created before coverage enforcement lack the column.
   try {

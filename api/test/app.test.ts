@@ -245,8 +245,9 @@ describe('eSIM provisioning', () => {
     ctx.entitle(kp)
     await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })
     const usage = (await ctx.app.inject({ method: 'GET', url: '/v1/usage', headers: auth })).json()
-    assert.equal(usage.dataTotalMb, 10 * 1024)
-    assert.ok(usage.dataUsedMb >= 0 && usage.dataUsedMb <= usage.dataTotalMb)
+    // The plan is unlimited, so there is no total.
+    assert.equal(usage.dataTotalMb, null)
+    assert.ok(usage.dataUsedMb >= 0)
   })
 
   test('a line is suspended while its wallet stops covering the plan, and resumes after', async () => {
@@ -270,8 +271,12 @@ describe('eSIM provisioning', () => {
     ctx.entitle(kp)
     await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })
     ctx.holdings.set(kp.publicKey.toBase58(), MIN - 1n)
-    const result = await createCoverage(ctx.deps).sweep(1n, MIN)
-    assert.deepEqual(result, { checked: 1, changed: 1 })
+    const result = await createCoverage({
+      db: ctx.deps.db,
+      providerByMode: () => ctx.deps.provider,
+      fetchHoldings: ctx.deps.fetchHoldings,
+    }).sweep(1n, MIN)
+    assert.deepEqual(result, { checked: 1, changed: 1, lapsed: 0 })
     const row = ctx.deps.db.prepare('SELECT suspended_at FROM orders').get() as { suspended_at: number | null }
     assert.ok(row.suspended_at)
   })

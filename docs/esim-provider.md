@@ -1,43 +1,82 @@
 # eSIM provider integration
 
 The API talks to telecom providers through one interface,
-[`MobileProvider`](../api/src/provider/types.ts). Two implementations exist:
+[`MobileProvider`](../api/src/provider/types.ts). There are two implementations,
+and the provider is chosen **per wallet**:
 
-| Mode | Class | Status |
+| Mode | Class | Who gets it |
 | --- | --- | --- |
-| `mock` (default) | `MockProvider` | Complete. Deterministic, credential-free, used by tests and judges. |
-| `shaka_sandbox` | `ShakaSandboxProvider` | Skeleton. Every method throws until it is wired to the sandbox API. |
+| `mock` | `MockProvider` | Everyone by default. Deterministic, credential-free, used by tests and anyone cloning the repo. |
+| `shaka_live` | `ShakaLiveProvider` | Wallets listed in `LIVE_ESIM_WALLETS`, when `SHAKA_API_KEY` is set. Real eSIMs on Shaka's UK network. |
 
-The first real adapter targets Shaka's wholesale eSIM API, which any developer
-can use. It is deliberately unimplemented. Endpoint paths, the auth
-scheme and payload fields have to come from Shaka's sandbox documentation, not
-from guesses.
+The app is on devnet, where SOL is free, so real lines are invitation-only. Add a
+wallet to the allowlist to give it a real eSIM.
 
-## What the adapter must do
+## Live lines (`api/src/provider/shaka.ts`)
 
-| Method | Contract |
-| --- | --- |
-| `createOrder({ planCode, idempotencyKey })` | Order one eSIM for the plan. **Must be idempotent** on `idempotencyKey` (`<wallet>:<period>`): a retry returns the same order and never creates a second one. Use the provider's idempotency header if it has one; otherwise look up by a client reference before creating. |
-| `getOrder(providerOrderId)` | Current status mapped to `pending` / `ready` / `failed`, the ICCID, and the LPA activation string (`LPA:1$<SM-DP+>$<matching id>`) once ready. |
-| `getUsage(providerOrderId, dataTotalMb)` | Data used (MB), minutes and texts for the current period. |
+Shaka's Nexus API v1.3 (`Authorization: Api-Key …`). The flow:
 
-Map provider payloads to these shapes inside the adapter; nothing Shaka-specific
-should leak into `app.ts`. Activation codes are secrets: never log them (the
-Fastify logger already redacts `activationCode`).
+1. **Subscriber**, one per wallet, with the reference `mobiloot-<cluster>-wallet-<address>`.
+   Wallets have no name or email, so the subscriber gets a placeholder name and a
+   non-delivering `@users.mobiloot.com` address.
+2. **New-subscription journey** on the configured plan, with the reference
+   `mobiloot-<cluster>-line-<uuid>`. Shaka answers with a journey ID; the eSIM is
+   ready once the subscription is `active`, its SIM is an `active` eSIM, and
+   installation data exists.
+3. **Install.** `POST /v1/esim/reveal` fetches `esim_data` on demand (Mobiloot never
+   stores activation codes for live lines). It returns the LPA string, its parts, and
+   Google's install link
+   (`https://esimsetup.android.com/esim_qrcode_provisioning?carddata=…`). The app's
+   **Install on this phone** button opens that link, so Android's own eSIM installer
+   starts with the code filled in.
+4. **Coverage.** A wallet keeps one line across periods. The line is suspended
+   (`suspend-sim` journey) while the wallet's lootSOL doesn't cover the plan, or when
+   it hasn't unlocked the current period, and unsuspended once it does.
 
-## Configuration
+Reliability rules:
+
+- Idempotency keys and references are saved before each request. Accepted IDs are
+  saved as soon as they come back.
+- A timeout, 429 or 5xx is retried with the **same** key, with backoff. Recovery
+  looks up the subscriber and subscription by their exact reference, walking every
+  page, and falls back to the subscription's `journeys.created_by`. More than one
+  match stops the line for review, and it never adopts the "newest" line.
+- 401, 403, 400 and 422 during provisioning stop the line (`needs_review`) rather
+  than retrying. A line that is already working stays usable through API errors.
+- Each line runs one step at a time. A 15-second reconciler moves lines along;
+  webhooks only make that happen sooner.
+
+The single-step design and the in-process lock assume **one API instance**, which is
+how it runs on Railway. Scaling out would need a database lock.
+
+### Webhooks
+
+`POST /v1/webhooks/shaka`: verifies `Shaka-Signature: t=…,v1=…` (HMAC-SHA256 of
+`t.` plus the raw body) and accepts delayed retries for up to 3 days. It dedupes on
+`idempotency_id` and stores no payloads. An event only schedules a re-read of a line
+Mobiloot owns, because the key is shared with other apps on the same Shaka account.
+Journeys carry `webhook_url` only when `SHAKA_WEBHOOK_URL` is set, so the
+account-wide callback is never changed.
+
+## Configuration (API host only, never the app)
 
 ```bash
-PROVIDER_MODE=shaka_sandbox
-SHAKA_SANDBOX_BASE_URL=...   # server-side only
-SHAKA_SANDBOX_API_KEY=...    # server-side only, never in the app or repo
+SHAKA_API_KEY=…                # secret
+SHAKA_WEBHOOK_SECRET=…         # secret
+SHAKA_BASE_URL=https://nexus.shaka.tel/api/v0-0-0   # default
+SHAKA_PLAN_ID=58               # Shaka plan behind Mobiloot Unlimited (default)
+SHAKA_WEBHOOK_URL=https://<api host>/v1/webhooks/shaka   # optional
+SHAKA_REFERENCE_PREFIX=mobiloot-devnet                   # default: mobiloot-<cluster>
+LIVE_ESIM_WALLETS=<wallet>,<wallet>
 ```
 
-`shaka_live` is rejected at startup on purpose.
+With `SHAKA_API_KEY` unset, everyone gets the mock. `npm test` uses an in-memory fake
+Shaka (`api/test/shaka.test.ts`) and never touches real stock.
 
-## Checklist before switching the demo to the sandbox
+## Operations
 
-- [ ] Sandbox docs and credentials obtained; credentials stored only in the API host's secret store.
-- [ ] Adapter implemented from the docs; contract tests added using **sanitised** real sandbox responses.
-- [ ] Confirmed the plan name, allowances and cost used in `api/src/plans.ts` are OK to show publicly.
-- [ ] `npm test` still passes in mock mode (cloneability).
+- **A line stuck in `needs_review`.** Read `last_error` and `last_request_id` in
+  `shaka_lines`, then fix the cause in Shaka. Setting `state='provisioning'` lets it
+  resume with the same keys.
+- **Don't delete `shaka_lines` rows.** They hold the idempotency identity. Recreating
+  a row would order a second eSIM.

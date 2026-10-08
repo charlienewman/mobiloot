@@ -13,7 +13,7 @@
           • SIWS sessions
           • verifies entitlement + holdings → orders eSIM (idempotent)
           • pool stats, Pyth SOL price, epoch crank
-          └──► MobileProvider: MockProvider | ShakaSandboxProvider
+          └──► MobileProvider: MockProvider | ShakaLiveProvider (per wallet)
 ```
 
 ## Repository

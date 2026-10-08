@@ -57,11 +57,10 @@ Solflare, set to devnet) before recording.
 
 ## 5. eSIM provider
 
-- [ ] Shaka wholesale API docs and sandbox credentials, then implement
-  `ShakaSandboxProvider` ([esim-provider.md](esim-provider.md)). Mock mode is
-  fine for the submission.
-- [ ] Confirm the plan shown (`api/src/plans.ts`: name, 10 GB, UK and EU
-  roaming, $6/mo cost assumption) or give the real values.
+- [x] Live Shaka eSIMs for allowlisted wallets (`ShakaLiveProvider`,
+  [esim-provider.md](esim-provider.md)).
+- [ ] Confirm the $6/mo cost assumption in `api/src/plans.ts` against the real
+  plan price.
 
 ## 6. Competition admin
 

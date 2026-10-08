@@ -23,6 +23,7 @@ export class MockProvider implements MobileProvider {
       activationCode: `LPA:1$rsp.mock.mobiloot.invalid$ZM-${digest(id + 'm')
         .slice(0, 20)
         .toUpperCase()}`,
+      hasActivation: true,
     }
     this.orders.set(id, { order, createdAt: Date.now() })
     return order
@@ -42,13 +43,13 @@ export class MockProvider implements MobileProvider {
     this.suspended.delete(providerOrderId)
   }
 
-  async getUsage(providerOrderId: string, dataTotalMb: number): Promise<Usage> {
+  async getUsage(providerOrderId: string, dataTotalMb: number | null): Promise<Usage> {
     // Usage grows smoothly from the order's creation so the Home screen moves over time.
     const createdAt = this.orders.get(providerOrderId)?.createdAt ?? Date.now()
     const days = (Date.now() - createdAt) / 86_400_000
     const seed = parseInt(digest(providerOrderId).slice(0, 4), 16) / 0xffff
     return {
-      dataUsedMb: Math.min(dataTotalMb, Math.round(180 + days * (220 + seed * 120))),
+      dataUsedMb: Math.min(dataTotalMb ?? Infinity, Math.round(180 + days * (220 + seed * 120))),
       dataTotalMb,
       minutesUsed: Math.round(12 + days * 9),
       textsUsed: Math.round(4 + days * 3),

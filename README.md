@@ -36,7 +36,7 @@ price. See [docs/economics.md](docs/economics.md).
 | Staking, lootSOL, withdrawals | **Real** SPL stake pool transactions (devnet) |
 | Rewards to the treasury | **Real.** 100% epoch fee, minted to the treasury every epoch |
 | Plan entitlement | **Real** Anchor program on devnet |
-| eSIM | **Mock provider** by default; a real eSIM provider plugs in behind the same interface ([docs/esim-provider.md](docs/esim-provider.md)) |
+| eSIM | **Real eSIMs** on Shaka's UK network for invited wallets, with one-tap install on Android; a **mock provider** for everyone else and for tests ([docs/esim-provider.md](docs/esim-provider.md)) |
 | Money | Devnet SOL has no value. The plan unlocks at 0.5 lootSOL on devnet so anyone can try it |
 
 The app always shows which network and eSIM provider are active.
@@ -122,7 +122,7 @@ pool program.
 
 Licence: MIT.
 
-Disclosure: the first real eSIM adapter targets [Shaka](https://shaka.tel)'s
-wholesale API, which is open to any developer. Charlie is a minority
+Disclosure: live eSIMs come from [Shaka](https://shaka.tel)'s wholesale API,
+which is open to any developer. Charlie is a minority
 shareholder in Shaka. Mobiloot is an independent personal project and is not
 run or funded by Shaka.

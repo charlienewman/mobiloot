@@ -36,5 +36,5 @@ Test clusters only; no mainnet funds are involved.
 - The API is a single process with SQLite. Set `TRUST_PROXY=true` behind a reverse proxy so rate limits see real client IPs.
 - The mock provider keeps its orders in memory; a real provider must be idempotent on its side.
 - The admin can change `period_origin`/`period_seconds`, which re-maps period IDs. Treat these as fixed after launch.
-- The Shaka sandbox adapter is not wired yet (see `esim-provider.md`).
+- Live eSIMs share a Shaka API key with other apps on the account; every reference is namespaced and every webhook is checked against Mobiloot's own lines (see `esim-provider.md`).
 - Localnet yield does not annualise meaningfully, so a reference APY is shown there.

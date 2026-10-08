@@ -93,7 +93,7 @@ function PlanDetails() {
         <BrandMark size={36} />
       </Row>
       <Row gap={space.xl}>
-        <Feature icon="wifi" label={`${p.dataGb} GB`} />
+        <Feature icon="wifi" label={p.dataGb === 'unlimited' ? 'Unlimited' : `${p.dataGb} GB`} />
         <Feature icon="phone" label={p.minutes === 'unlimited' ? 'Unlimited' : `${p.minutes} min`} />
         <Feature icon="message-square" label={p.texts === 'unlimited' ? 'Unlimited' : `${p.texts}`} />
       </Row>
@@ -125,14 +125,15 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
     },
   })
   const failed = provision.isError || order?.status === 'failed'
+  const ordered = order?.status === 'pending'
   const steps = [
     { label: 'Plan entitlement confirmed on Solana', done: true },
     {
-      label: config.providerMode === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered',
-      done: false,
+      label: (order?.providerMode ?? config.providerMode) === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered',
+      done: ordered,
       active: provision.isPending,
     },
-    { label: 'eSIM ready to install', done: false },
+    { label: ordered ? 'Activating your eSIM on the network…' : 'eSIM ready to install', done: false, active: ordered },
   ]
   return (
     <Card>
@@ -170,11 +171,18 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress: strin
           try again.
         </Notice>
       ) : null}
-      <Button
-        title={failed ? 'Try again' : 'Get my eSIM'}
-        loading={provision.isPending}
-        onPress={() => provision.mutate()}
-      />
+      {ordered ? (
+        <Text variant="small" color={colors.textMuted}>
+          This usually takes a few seconds and sometimes a few minutes. You can leave this screen; it carries on in the
+          background.
+        </Text>
+      ) : (
+        <Button
+          title={failed ? 'Try again' : 'Get my eSIM'}
+          loading={provision.isPending}
+          onPress={() => provision.mutate()}
+        />
+      )}
     </Card>
   )
 }
@@ -198,9 +206,18 @@ function EsimReady({ order }: { order: EsimOrder }) {
     return () => clearTimeout(t)
   }, [revealed])
 
+  const live = order.providerMode !== 'mock'
   const reveal = useMutation({
     mutationFn: () => api<RevealedEsim>('/v1/esim/reveal', { method: 'POST', token }),
     onSuccess: setRevealed,
+  })
+  // Hands the code straight to Android's eSIM installer; it never appears on screen.
+  const install = useMutation({
+    mutationFn: async () => {
+      const esim = await api<RevealedEsim>('/v1/esim/reveal', { method: 'POST', token })
+      if (!esim.androidInstallUrl) throw new Error('This eSIM has no install link. Use the activation code instead.')
+      await Linking.openURL(esim.androidInstallUrl)
+    },
   })
 
   const copy = (label: string, value: string) => {
@@ -219,7 +236,7 @@ function EsimReady({ order }: { order: EsimOrder }) {
               {config.plan.name}
             </Text>
             <Text variant="label" color={colors.limeInk}>
-              {order.providerMode === 'mock' ? 'Mock eSIM' : 'eSIM'}
+              {live ? 'eSIM' : 'Mock eSIM'}
             </Text>
           </Row>
           <View style={styles.chip} />
@@ -250,14 +267,40 @@ function EsimReady({ order }: { order: EsimOrder }) {
           <Text variant="heading">Install your eSIM</Text>
           <Chip label={order.suspended ? 'Suspended' : 'Ready'} tone={order.suspended ? 'danger' : 'lime'} />
         </Row>
-        <Stack gap={space.sm}>
-          <Text color={colors.textMuted}>1. Open SIM settings and choose Add eSIM (or Download a SIM).</Text>
-          <Text color={colors.textMuted}>
-            2. Pick &quot;Enter code manually&quot; and paste the activation code, or scan the QR from another screen.
-          </Text>
-          <Text color={colors.textMuted}>3. Turn on the Mobiloot line for mobile data.</Text>
-        </Stack>
-        {order.providerMode === 'mock' ? (
+        {live ? (
+          <Stack gap={space.sm}>
+            <Text color={colors.textMuted}>
+              1. Tap Install on this phone. Android opens its eSIM installer with your code filled in.
+            </Text>
+            <Text color={colors.textMuted}>
+              2. Confirm the download. Stay on Wi-Fi or mobile data until it finishes.
+            </Text>
+            <Text color={colors.textMuted}>3. Turn on the Mobiloot line, and pick it for mobile data if you like.</Text>
+            <Text variant="small" color={colors.textFaint}>
+              If the installer doesn&apos;t open, show the activation code and enter it in SIM settings under Add eSIM.
+            </Text>
+          </Stack>
+        ) : (
+          <Stack gap={space.sm}>
+            <Text color={colors.textMuted}>1. Open SIM settings and choose Add eSIM (or Download a SIM).</Text>
+            <Text color={colors.textMuted}>
+              2. Pick &quot;Enter code manually&quot; and paste the activation code, or scan the QR from another screen.
+            </Text>
+            <Text color={colors.textMuted}>3. Turn on the Mobiloot line for mobile data.</Text>
+          </Stack>
+        )}
+        {live ? (
+          <Button
+            title="Install on this phone"
+            disabled={order.suspended}
+            loading={install.isPending}
+            onPress={() => install.mutate()}
+            icon={<Feather name="download" size={18} color={colors.limeInk} />}
+            accessibilityHint="Opens Android's eSIM installer"
+          />
+        ) : null}
+        {install.isError ? <Notice tone="danger">{(install.error as Error).message}</Notice> : null}
+        {!live ? (
           <Notice tone="info">
             This is a mock eSIM for the demo. Its code points to a test server and will not install a live line.
           </Notice>
@@ -270,6 +313,14 @@ function EsimReady({ order }: { order: EsimOrder }) {
             <View style={{ alignSelf: 'center', padding: space.md, backgroundColor: '#fff', borderRadius: radius.md }}>
               <QRCode value={revealed.activationCode} size={180} />
             </View>
+            {revealed.msisdn ? (
+              <CopyRow
+                label="Your number"
+                value={`+${revealed.msisdn.replace(/^\+/, '')}`}
+                copied={copied}
+                onCopy={copy}
+              />
+            ) : null}
             {revealed.smdpAddress ? (
               <CopyRow label="SM-DP+ address" value={revealed.smdpAddress} copied={copied} onCopy={copy} />
             ) : null}
@@ -291,8 +342,9 @@ function EsimReady({ order }: { order: EsimOrder }) {
         )}
         <Button
           title="Open SIM settings"
+          kind={live ? 'ghost' : 'primary'}
           onPress={openSimSettings}
-          icon={<Feather name="settings" size={18} color={colors.limeInk} />}
+          icon={<Feather name="settings" size={18} color={live ? colors.text : colors.limeInk} />}
         />
       </Card>
 
@@ -308,10 +360,14 @@ function EsimReady({ order }: { order: EsimOrder }) {
                   Data
                 </Text>
                 <Text variant="small">
-                  {mb(usage.data.dataUsedMb)} of {mb(usage.data.dataTotalMb)}
+                  {usage.data.dataTotalMb == null
+                    ? `${mb(usage.data.dataUsedMb)} used · unlimited`
+                    : `${mb(usage.data.dataUsedMb)} of ${mb(usage.data.dataTotalMb)}`}
                 </Text>
               </Row>
-              <ProgressBar value={usage.data.dataUsedMb / usage.data.dataTotalMb} />
+              {usage.data.dataTotalMb == null ? null : (
+                <ProgressBar value={usage.data.dataUsedMb / usage.data.dataTotalMb} />
+              )}
             </Stack>
             <Divider />
             <KeyValue label="Calls" value={`${usage.data.minutesUsed} min`} />

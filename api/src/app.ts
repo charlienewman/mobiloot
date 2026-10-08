@@ -10,12 +10,18 @@ import { createCoverage } from './coverage'
 import type { Db, OrderRow } from './db'
 import { planByCode, PLANS } from './plans'
 import type { MobileProvider } from './provider'
+import { verifyShakaSignature } from './provider/shaka'
 import type { PoolStats } from './stats'
 
 /** Everything the routes need from the outside world, injectable for tests. */
 export interface Deps {
   db: Db
+  /** Everyone's eSIM provider (the mock), unless their wallet is in `liveWallets`. */
   provider: MobileProvider
+  /** Real eSIMs, for allowlisted wallets only. */
+  live?: MobileProvider & { noteEvent?(event: Record<string, any>): boolean; reconcileDue?(): Promise<unknown> }
+  liveWallets?: Set<string>
+  shakaWebhookSecret?: string
   cluster: {
     cluster: string
     rpcUrl: string
@@ -37,7 +43,10 @@ export interface Deps {
 
 export function buildApp(deps: Deps) {
   const { db, provider } = deps
-  const coverage = createCoverage(deps)
+  const providerFor = (address: string) => (deps.live && deps.liveWallets?.has(address) ? deps.live : provider)
+  const providerByMode = (mode: string) =>
+    deps.live?.mode === mode ? deps.live : provider.mode === mode ? provider : undefined
+  const coverage = createCoverage({ db, providerByMode, fetchHoldings: deps.fetchHoldings })
   const app = Fastify({
     logger: {
       level: process.env.LOG_LEVEL ?? 'info',
@@ -140,10 +149,11 @@ export function buildApp(deps: Deps) {
         deps.fetchEntitlement(owner, period),
         deps.fetchHoldings(owner),
       ])
-      const found = findOrder(owner.toBase58(), period)
+      const found = await refreshOrder(findOrder(owner.toBase58(), period))
       const order = found && (await coverage.apply(found, holdings.stakeLamports, config.minStakeLamports))
       return {
         address: owner.toBase58(),
+        liveEsim: providerFor(owner.toBase58()) !== provider,
         period: period.toString(),
         holdings: {
           poolTokens: holdings.poolTokens.toString(),
@@ -176,7 +186,8 @@ export function buildApp(deps: Deps) {
         throw new HttpError(403, 'Your lootSOL balance no longer covers the plan.')
 
       const address = owner.toBase58()
-      const existing = findOrder(address, period)
+      const lineProvider = providerFor(address)
+      const existing = await refreshOrder(findOrder(address, period))
       if (existing?.status === 'ready')
         return publicOrder(await coverage.apply(existing, holdings.stakeLamports, config.minStakeLamports))
 
@@ -192,27 +203,19 @@ export function buildApp(deps: Deps) {
           Number(period),
           entitlement.planCode,
           entitlement.address.toBase58(),
-          provider.mode,
+          lineProvider.mode,
           now,
           now,
         )
       }
       const row = findOrder(address, period)!
       try {
-        const result = await provider.createOrder({
+        const result = await lineProvider.createOrder({
+          owner: address,
           planCode: row.plan_code,
           idempotencyKey: `${address}:${period}`,
         })
-        db.prepare(
-          `UPDATE orders SET provider_order_id = ?, status = ?, iccid = ?, activation_code = ?, error = NULL, updated_at = ? WHERE id = ?`,
-        ).run(
-          result.providerOrderId,
-          result.status,
-          result.iccid ?? null,
-          result.activationCode ?? null,
-          Date.now(),
-          row.id,
-        )
+        saveResult(row, result)
       } catch (e: any) {
         req.log.warn({ err: e.message, order: row.id }, 'provider order failed')
         db.prepare(`UPDATE orders SET status = 'failed', error = ?, updated_at = ? WHERE id = ?`).run(
@@ -221,7 +224,8 @@ export function buildApp(deps: Deps) {
           row.id,
         )
       }
-      return publicOrder(findOrder(address, period)!)
+      const saved = findOrder(address, period)!
+      return publicOrder(await coverage.apply(saved, holdings.stakeLamports, config.minStakeLamports))
     })
 
     /** Returns the secret activation code. Only on explicit request, never logged. */
@@ -229,10 +233,22 @@ export function buildApp(deps: Deps) {
       const owner = requireWallet(req)
       const config = await deps.fetchMobilootConfig()
       const order = await coveredOrder(owner, config)
-      if (!order?.activation_code) throw new HttpError(404, 'No eSIM ready yet')
-      return {
-        activationCode: order.activation_code,
-        ...splitLpa(order.activation_code),
+      if (order?.status !== 'ready') throw new HttpError(404, 'No eSIM ready yet')
+      if (order.activation_code) {
+        return {
+          activationCode: order.activation_code,
+          ...splitLpa(order.activation_code),
+          androidInstallUrl: androidInstallUrl(order.activation_code),
+          msisdn: null,
+        }
+      }
+      const p = providerByMode(order.provider_mode)
+      if (!p?.getActivation || !order.provider_order_id) throw new HttpError(404, 'No eSIM ready yet')
+      try {
+        return await p.getActivation(order.provider_order_id)
+      } catch (e: any) {
+        req.log.warn({ err: e.message, order: order.id }, 'activation fetch failed')
+        throw new HttpError(503, 'Could not fetch your eSIM details right now, try again')
       }
     })
 
@@ -242,9 +258,94 @@ export function buildApp(deps: Deps) {
       const order = await coveredOrder(owner, config)
       if (!order?.provider_order_id || order.status !== 'ready') throw new HttpError(404, 'No active eSIM')
       const plan = planByCode(order.plan_code) ?? PLANS[0]
-      return provider.getUsage(order.provider_order_id, plan.dataGb * 1024)
+      const p = providerByMode(order.provider_mode)
+      if (!p) throw new HttpError(404, 'No active eSIM')
+      try {
+        return await p.getUsage(order.provider_order_id, plan.dataGb === 'unlimited' ? null : plan.dataGb * 1024)
+      } catch (e: any) {
+        req.log.warn({ err: e.message, order: order.id }, 'usage fetch failed')
+        throw new HttpError(503, 'Usage is unavailable right now')
+      }
     })
   })
+
+  // Shaka webhooks. Signed over the raw bytes, so this scope keeps the body unparsed.
+  void app.register(async (app) => {
+    app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (_req, body, done) => done(null, body))
+    app.post('/v1/webhooks/shaka', async (req, reply) => {
+      const secret = deps.shakaWebhookSecret
+      if (!secret || !deps.live) return reply.code(404).send({ error: 'Not found' })
+      const raw = req.body
+      if (!Buffer.isBuffer(raw)) return reply.code(400).send({ error: 'Expected JSON' })
+      if (!verifyShakaSignature(raw, req.headers['shaka-signature'] as string | undefined, secret))
+        return reply.code(401).send({ error: 'Bad signature' })
+      let event: any
+      try {
+        event = JSON.parse(raw.toString('utf8'))
+      } catch {
+        return reply.code(400).send({ error: 'Invalid JSON' })
+      }
+      if (typeof event?.idempotency_id !== 'string') return reply.code(400).send({ error: 'Missing idempotency_id' })
+      // Keep only what dedupe needs. A storage failure surfaces as 500 so Shaka retries.
+      const fresh =
+        db
+          .prepare(
+            'INSERT OR IGNORE INTO shaka_events (idempotency_id, event_type, subscription_id, ours, received_at) VALUES (?, ?, ?, 0, ?)',
+          )
+          .run(
+            event.idempotency_id,
+            typeof event.event_type === 'string' ? event.event_type.slice(0, 64) : null,
+            Number.isInteger(event.subscription_id) ? event.subscription_id : null,
+            Date.now(),
+          ).changes > 0
+      if (fresh) {
+        // A valid signature proves Shaka sent it, not that the line is ours: noteEvent only
+        // schedules a canonical re-read of a line we own, and ignores everything else.
+        const ours = deps.live.noteEvent?.({
+          subscription_id: event.subscription_id,
+          journey_id: event.journey_id,
+          subscription_reference_id: event.subscription_reference_id,
+        })
+        if (ours) {
+          db.prepare('UPDATE shaka_events SET ours = 1 WHERE idempotency_id = ?').run(event.idempotency_id)
+          void deps.live.reconcileDue?.().catch(() => {})
+        }
+      }
+      return { ok: true }
+    })
+  })
+
+  /** Copies a provider result onto the order row. */
+  function saveResult(row: OrderRow, result: Awaited<ReturnType<MobileProvider['getOrder']>>) {
+    db.prepare(
+      `UPDATE orders SET provider_order_id = ?, status = ?, iccid = ?, activation_code = ?, error = ?,
+         suspended_at = CASE WHEN ? THEN COALESCE(suspended_at, ?) ELSE suspended_at END, updated_at = ? WHERE id = ?`,
+    ).run(
+      result.providerOrderId,
+      result.status,
+      result.iccid ?? null,
+      result.activationCode ?? null,
+      result.status === 'failed' ? (result.error ?? 'The eSIM order failed') : null,
+      // A live line carries over between periods, including a coverage suspension.
+      result.suspended ? 1 : 0,
+      Date.now(),
+      Date.now(),
+      row.id,
+    )
+  }
+
+  /** Brings a pending order up to date with its provider. */
+  async function refreshOrder(row: OrderRow | undefined) {
+    if (row?.status !== 'pending' || !row.provider_order_id) return row
+    const p = providerByMode(row.provider_mode)
+    if (!p) return row
+    try {
+      saveResult(row, await p.getOrder(row.provider_order_id))
+    } catch {
+      return row
+    }
+    return db.prepare('SELECT * FROM orders WHERE id = ?').get(row.id) as unknown as OrderRow
+  }
 
   /** The caller's current order after re-checking coverage; refuses suspended lines. */
   async function coveredOrder(owner: PublicKey, config: MobilootConfig) {
@@ -259,10 +360,10 @@ export function buildApp(deps: Deps) {
   function findOrder(address: string, period: bigint): OrderRow | undefined {
     return db
       .prepare('SELECT * FROM orders WHERE address = ? AND period = ? AND provider_mode = ?')
-      .get(address, Number(period), provider.mode) as OrderRow | undefined
+      .get(address, Number(period), providerFor(address).mode) as OrderRow | undefined
   }
 
-  return app
+  return Object.assign(app, { refreshOrder })
 }
 
 function publicOrder(o: OrderRow) {
@@ -272,12 +373,16 @@ function publicOrder(o: OrderRow) {
     providerMode: o.provider_mode,
     planCode: o.plan_code,
     iccidLast4: o.iccid?.slice(-4) ?? null,
-    hasActivationCode: Boolean(o.activation_code),
+    hasActivationCode: o.status === 'ready',
     suspended: Boolean(o.suspended_at),
     error: o.error,
     createdAt: o.created_at,
   }
 }
+
+/** Google's link that opens Android's eSIM installer with this code filled in. */
+const androidInstallUrl = (lpa: string) =>
+  `https://esimsetup.android.com/esim_qrcode_provisioning?carddata=${encodeURIComponent(lpa)}`
 
 /** LPA:1$<SM-DP+ address>$<matching id> → parts for manual entry in Android settings. */
 function splitLpa(code: string) {

@@ -16,9 +16,18 @@ const Env = z.object({
   /** Domain the sign-in message is bound to. */
   SIGN_IN_DOMAIN: z.string().default('mobiloot.com'),
   DB_PATH: z.string().default(path.join(ROOT, 'api/data/mobiloot.db')),
-  PROVIDER_MODE: z.enum(['mock', 'shaka_sandbox']).default('mock'),
-  SHAKA_SANDBOX_BASE_URL: z.string().optional(),
-  SHAKA_SANDBOX_API_KEY: z.string().optional(),
+  // Live eSIMs (Shaka Nexus). Unset SHAKA_API_KEY and everyone gets the mock provider.
+  SHAKA_BASE_URL: z.string().default('https://nexus.shaka.tel/api/v0-0-0'),
+  SHAKA_API_KEY: z.string().optional(),
+  SHAKA_WEBHOOK_SECRET: z.string().optional(),
+  /** Public HTTPS URL of this API's /v1/webhooks/shaka, sent with each journey. */
+  SHAKA_WEBHOOK_URL: z.string().optional(),
+  /** Provider plan behind Mobiloot's plan (from GET /data/plans/). */
+  SHAKA_PLAN_ID: z.coerce.number().int().positive().default(58),
+  /** Namespace for every Shaka reference; defaults to mobiloot-<cluster>. */
+  SHAKA_REFERENCE_PREFIX: z.string().optional(),
+  /** Wallets (comma or space separated) that get real eSIMs; everyone else gets the mock. */
+  LIVE_ESIM_WALLETS: z.string().optional(),
   /** Keypair that pays for permissionless pool updates. Unset disables the crank. */
   CRANK_KEYPAIR: z.string().optional(),
   /** The same keypair as a JSON byte array, for hosts that only take env vars (Railway). */
@@ -30,7 +39,6 @@ const Env = z.object({
 })
 
 export const env = Env.parse(process.env)
-if ((env.PROVIDER_MODE as string) === 'shaka_live') throw new Error('shaka_live is not supported')
 
 export const cluster: ClusterConfig = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'config', `${env.CLUSTER}.json`), 'utf8'),
