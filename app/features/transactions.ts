@@ -61,8 +61,9 @@ export function useTransactions() {
 
         setState({ step: 'wallet', kind })
         let signature: string
-        if (config.cluster === 'localnet') {
-          // Wallets can't reach a laptop validator, so sign in the wallet and send ourselves.
+        if (config.cluster !== 'mainnet-beta') {
+          // Wallets can't reach a laptop validator, and some (the Seeker's own) only send to
+          // mainnet, so off mainnet the wallet just signs and we send it ourselves.
           const signed = await wallet.signTransaction(tx)
           signature = await connection.sendRawTransaction(signed.serialize())
         } else {
