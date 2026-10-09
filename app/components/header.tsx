@@ -1,5 +1,6 @@
 import { View } from 'react-native'
 import { useMobiloot } from '@/features/config'
+import { useMe } from '@/features/data'
 import { colors, space } from '@/constants/theme'
 import { Wordmark } from './brand'
 import { Chip } from './ui'
@@ -10,6 +11,8 @@ import { Chip } from './ui'
  */
 export function Header() {
   const { config } = useMobiloot()
+  // Which provider serves *this* wallet; the server default is the mock for everyone else.
+  const live = useMe().data?.liveEsim ?? config.providerMode !== 'mock'
   const network = config.cluster === 'mainnet-beta' ? null : config.cluster === 'devnet' ? 'Devnet' : 'Localnet'
   return (
     <View
@@ -26,7 +29,7 @@ export function Header() {
       <Wordmark size={20} />
       <View style={{ flexDirection: 'row', gap: 6 }}>
         {network ? <Chip label={network} tone="warn" /> : null}
-        <Chip label={config.providerMode === 'mock' ? 'Mock eSIM' : 'Sandbox eSIM'} tone="info" />
+        <Chip label={live ? 'Live eSIM' : 'Mock eSIM'} tone={live ? 'lime' : 'info'} />
       </View>
     </View>
   )
