@@ -10,6 +10,34 @@ Seeker and any Android phone with a Mobile Wallet Adapter wallet.
 stake SOL ──► lootSOL in your wallet ──► rewards go to the treasury ──► plan unlocked on-chain ──► eSIM
 ```
 
+## Try it in 3 minutes (judges start here)
+
+You need an Android phone (a Seeker is ideal) with a Mobile Wallet Adapter wallet:
+the Seeker's own wallet or Phantom.
+
+1. **Install the APK** (`mobiloot-0.1.0.apk`, attached to the submission).
+2. **Switch your wallet to devnet.** Mobiloot runs on devnet, so no real money is
+   involved. In the Seeker wallet, change the network to Devnet in its settings.
+   In Phantom, go to Settings → Developer Settings → Testnet Mode → Solana Devnet.
+3. **Get about 0.7 devnet SOL** from [faucet.solana.com](https://faucet.solana.com).
+4. **Connect.** Open Mobiloot and tap *Connect wallet*. One approval connects you
+   and signs you in.
+5. **Stake 0.5 SOL or more** on the *Stake* tab. You'll see how much of the plan
+   your stake funds before you sign.
+6. **Activate** on the *eSIM* tab. This writes this month's plan to Solana for your
+   wallet, and you can view it on Solana Explorer.
+7. **Get your eSIM.** Your wallet gets a demo eSIM, marked *Mock eSIM* at the
+   top right. Real eSIMs on Shaka's UK network are limited to invited wallets
+   while we test, and one is running on our Seeker now (see the demo video).
+8. **Withdraw** on the *Stake* tab whenever you like, with no fee. Drop below 0.5
+   lootSOL and the line is suspended within a minute; stake again and it resumes.
+
+| Welcome | Home | Stake | Account |
+| --- | --- | --- | --- |
+| <img src="docs/screenshots/welcome.png" width="180" alt="Welcome screen"> | <img src="docs/screenshots/home.png" width="180" alt="Home screen showing how much of the plan the stake funds"> | <img src="docs/screenshots/stake.png" width="180" alt="Stake screen"> | <img src="docs/screenshots/account.png" width="180" alt="Account screen"> |
+
+<sub>Captured on localnet; on devnet the chip reads Devnet.</sub>
+
 ## How it works
 
 1. **Stake.** Deposit SOL into the lootSOL stake pool and get lootSOL back in
