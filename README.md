@@ -1,4 +1,11 @@
-# Mobiloot
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo/mobiloot-wordmark.svg">
+    <img src="logo/mobiloot-wordmark-dark-text.svg" alt="Mobiloot" width="360">
+  </picture>
+</h1>
+
+**Stake once. Stay connected.**
 
 **A mobile plan paid for by your staking yield.** Stake SOL, keep your principal,
 and let the rewards pay for your phone plan. There's no card and no monthly bill.
