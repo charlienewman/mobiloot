@@ -190,6 +190,18 @@ describe('auth', () => {
   })
 })
 
+describe('config', () => {
+  test('prices the plan in pounds, with a dollar cost for older app builds', async () => {
+    const { app, deps } = setup()
+    deps.gbpUsd = 1.25
+    const res = (await buildApp(deps).inject({ method: 'GET', url: '/v1/config' })).json()
+    assert.equal(res.plan.monthlyPriceGbp, 10)
+    assert.equal(res.plan.monthlyCostUsd, 12.5)
+    assert.equal(res.gbpUsd, 1.25)
+    await app.close()
+  })
+})
+
 describe('eSIM provisioning', () => {
   let ctx: ReturnType<typeof setup>
   let kp: Keypair

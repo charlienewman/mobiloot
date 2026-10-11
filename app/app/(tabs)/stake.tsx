@@ -100,7 +100,7 @@ export default function Stake() {
         </Text>
         <KeyValue label="Your stake" value={`${sol(afterLamports)} SOL`} />
         <KeyValue label="Plan funded by yield" value={`${pct(now.fundedRatio)} → ${pct(after.fundedRatio)}`} />
-        <KeyValue label="Yield to your plan" value={`${usd(after.monthlyYieldUsd)}/mo`} />
+        <KeyValue label="Yield to your plan" value={`${after.money(after.monthlyYield)}/mo`} />
         <KeyValue
           label="Unlocks this period's plan"
           value={afterLamports >= min ? 'Yes' : `Needs ${sol(min - afterLamports)} more`}
@@ -146,8 +146,8 @@ export default function Stake() {
           {now.fullStakeSol.toFixed(1)} SOL
         </Text>
         <Text variant="small" color={colors.textMuted}>
-          {config.plan.name} costs Mobiloot about {usd(config.plan.monthlyCostUsd, 0)} a month. At {pct(now.apy, 1)}{' '}
-          yield ({now.apySource === 'measured' ? 'measured' : 'mainnet reference'}) and SOL at {usd(now.solUsd, 0)} (
+          {config.plan.name} is {now.money(now.planCost, 0)} a month. At {pct(now.apy, 1)} yield (
+          {now.apySource === 'measured' ? 'measured' : 'mainnet reference'}) and SOL at {usd(now.solUsd, 0)} (
           {now.priceSource === 'pyth' ? 'Pyth' : 'estimate'}), that stake&apos;s rewards cover the plan. These are
           estimates, not guarantees: yield and SOL&apos;s price both move.
         </Text>

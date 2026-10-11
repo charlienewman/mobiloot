@@ -21,7 +21,7 @@ import {
 import { colors, space } from '@/constants/theme'
 import { useMobiloot } from '@/features/config'
 import { useFunding, useMe, usePool, useUsage } from '@/features/data'
-import { daysUntil, mb, pct, sol, usd } from '@/features/format'
+import { daysUntil, mb, pct, sol } from '@/features/format'
 
 export default function Home() {
   const { config } = useMobiloot()
@@ -68,9 +68,15 @@ export default function Home() {
         </CoverageRing>
         <Text style={{ textAlign: 'center' }}>
           <Text variant="heading">{sol(stakeLamports)} SOL</Text>
-          <Text color={colors.textMuted}> staked, paying ≈ </Text>
-          <Text variant="heading">{usd(funding.monthlyYieldUsd)}</Text>
-          <Text color={colors.textMuted}> of the {usd(funding.planCost, 0)}/mo plan</Text>
+          {funding.fundedRatio >= 1 ? (
+            <Text color={colors.textMuted}> staked: your {funding.money(funding.planCost, 0)}/mo plan is free</Text>
+          ) : (
+            <>
+              <Text color={colors.textMuted}> staked, paying ≈ </Text>
+              <Text variant="heading">{funding.money(funding.monthlyYield)}</Text>
+              <Text color={colors.textMuted}> of the {funding.money(funding.planCost, 0)}/mo plan</Text>
+            </>
+          )}
         </Text>
         {stakeLamports === 0 ? (
           <Button

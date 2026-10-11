@@ -52,11 +52,11 @@ export async function poolStats(): Promise<PoolStats> {
       base += BigInt(r.postBalance - r.amount)
     }
   }
-  // Measured yield, annualised simply. Localnet's 64-slot epochs pay rewards that do not
-  // annualise meaningfully, so implausible values fall back to a labelled reference.
+  // Measured yield, annualised simply. Test clusters' rewards say nothing about mainnet
+  // (localnet's 64-slot epochs, devnet's own inflation), so they use a labelled reference.
   const epochsPerYear = SLOTS_PER_YEAR / epochInfo.slotsInEpoch
   const measured = base > 0n ? (Number(rewards) / Number(base)) * epochsPerYear : null
-  const plausible = measured !== null && measured > 0 && measured < 0.25
+  const plausible = cluster.cluster === 'mainnet-beta' && measured !== null && measured > 0 && measured < 0.25
   const apy = plausible ? measured : env.REFERENCE_APY
   const apySource: PoolStats['apySource'] = plausible ? 'measured' : 'reference'
 

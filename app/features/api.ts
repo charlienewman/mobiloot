@@ -37,6 +37,8 @@ export interface Plan {
   texts: 'unlimited' | number
   coverage: string
   network: string
+  /** Older servers send only a USD cost. */
+  monthlyPriceGbp?: number
   monthlyCostUsd: number
 }
 
@@ -55,6 +57,7 @@ export interface MobilootConfigResponse {
   paused: boolean
   period: { id: string; start: number; end: number; seconds: number }
   solUsd: { usd: number; source: string }
+  gbpUsd?: number
 }
 
 export interface PoolStats {

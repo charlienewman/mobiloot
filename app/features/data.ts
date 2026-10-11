@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PublicKey } from '@solana/web3.js'
 import { api, ApiError, type Me, type PoolStats, type Usage } from './api'
 import { useMobiloot } from './config'
+import { gbp, usd } from './format'
 import { useSession } from './session'
 
 function useAuthed<T>(
@@ -61,16 +62,22 @@ export function useFunding(stakeLamports: number) {
   const apy = pool.data?.apy ?? 0.068
   const solUsd = config.solUsd.usd
   const monthlyYieldUsd = ((stakeLamports / 1e9) * apy * solUsd) / 12
-  const planCost = config.plan.monthlyCostUsd
-  const fullStakeSol = (planCost * 12) / (apy * solUsd)
+  // The plan is priced in pounds; SOL in dollars.
+  const inGbp = config.plan.monthlyPriceGbp !== undefined
+  const fx = inGbp ? (config.gbpUsd ?? 1.33) : 1
+  const planCost = config.plan.monthlyPriceGbp ?? config.plan.monthlyCostUsd
+  const monthlyYield = monthlyYieldUsd / fx
+  const fullStakeSol = (planCost * 12 * fx) / (apy * solUsd)
   return {
     apy,
     apySource: pool.data?.apySource ?? 'reference',
     solUsd,
     priceSource: config.solUsd.source,
-    monthlyYieldUsd,
+    monthlyYield,
     planCost,
-    fundedRatio: planCost > 0 ? monthlyYieldUsd / planCost : 0,
+    /** Formats an amount in the plan's currency. */
+    money: inGbp ? gbp : usd,
+    fundedRatio: planCost > 0 ? monthlyYield / planCost : 0,
     fullStakeSol,
     minStakeSol: Number(config.minStakeLamports) / 1e9,
   }

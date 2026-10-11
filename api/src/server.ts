@@ -20,6 +20,7 @@ const app = buildApp({
   shakaWebhookSecret: env.SHAKA_WEBHOOK_SECRET,
   cluster,
   signInDomain: env.SIGN_IN_DOMAIN,
+  gbpUsd: env.GBP_USD,
   trustProxy: env.TRUST_PROXY,
   fetchMobilootConfig,
   currentPeriod,

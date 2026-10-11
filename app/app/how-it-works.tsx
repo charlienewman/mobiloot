@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native'
 import { Card, Row, Screen, Stack, Text } from '@/components/ui'
 import { colors, space } from '@/constants/theme'
 import { useMobiloot } from '@/features/config'
-import { usd } from '@/features/format'
+import { gbp, usd } from '@/features/format'
 
 export default function HowItWorks() {
   const router = useRouter()
@@ -39,10 +39,13 @@ export default function HowItWorks() {
       <Card tone="raised">
         <Text variant="heading">The honest maths</Text>
         <Text color={colors.textMuted}>
-          {config.plan.name} costs Mobiloot about {usd(config.plan.monthlyCostUsd, 0)} a month. Your stake funds it
-          fully when its yearly rewards cover twelve months of that. Yield and SOL&apos;s price change, so the stake
-          needed changes too, and the app always shows today&apos;s figure. Staking carries risks, including validator
-          performance and smart-contract risk.
+          {config.plan.name} is{' '}
+          {config.plan.monthlyPriceGbp !== undefined
+            ? gbp(config.plan.monthlyPriceGbp, 0)
+            : usd(config.plan.monthlyCostUsd, 0)}{' '}
+          a month. Your stake funds it fully when its yearly rewards cover twelve months of that. Yield and SOL&apos;s
+          price change, so the stake needed changes too, and the app always shows today&apos;s figure. Staking carries
+          risks, including validator performance and smart-contract risk.
         </Text>
       </Card>
       {config.cluster !== 'mainnet-beta' ? (

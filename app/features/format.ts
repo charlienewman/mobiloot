@@ -11,6 +11,10 @@ export function usd(v: number, digits = 2) {
   return '$' + v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
 }
 
+export function gbp(v: number, digits = 2) {
+  return '£' + v.toLocaleString('en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+}
+
 export function pct(v: number, digits = 0) {
   return `${(v * 100).toFixed(digits)}%`
 }

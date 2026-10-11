@@ -38,6 +38,8 @@ const Env = z.object({
   /** The same keypair as a JSON byte array, for hosts that only take env vars (Railway). */
   CRANK_KEYPAIR_JSON: z.string().optional(),
   SOL_USD_FALLBACK: z.coerce.number().default(150),
+  /** Dollars per pound, for valuing USD-priced SOL yield against the GBP plan price. */
+  GBP_USD: z.coerce.number().positive().default(1.33),
   MAINNET_RPC_URL: z.string().default('https://api.mainnet-beta.solana.com'),
   /** Mainnet-like staking yield used where a test cluster cannot measure one. */
   REFERENCE_APY: z.coerce.number().default(0.068),

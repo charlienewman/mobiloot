@@ -1,5 +1,5 @@
 // The plan catalogue. `code` must match the mobiloot program's configured plan code.
-// Costs are illustrative wholesale assumptions used for the funding maths, not prices.
+// `monthlyPriceGbp` is the retail price the stake's yield has to cover.
 export interface Plan {
   code: string
   name: string
@@ -8,8 +8,8 @@ export interface Plan {
   minutes: 'unlimited' | number
   texts: 'unlimited' | number
   coverage: string
-  /** Assumed monthly wholesale cost the pool's yield has to cover. */
-  monthlyCostUsd: number
+  /** Monthly retail price in pounds; the pool's yield has to cover it. */
+  monthlyPriceGbp: number
 }
 
 export const PLANS: Plan[] = [
@@ -21,7 +21,7 @@ export const PLANS: Plan[] = [
     minutes: 'unlimited',
     texts: 'unlimited',
     coverage: 'UK',
-    monthlyCostUsd: 6,
+    monthlyPriceGbp: 10,
   },
 ]
 

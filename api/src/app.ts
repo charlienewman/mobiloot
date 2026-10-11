@@ -34,6 +34,8 @@ export interface Deps {
     mobilootProgram?: string
   }
   signInDomain: string
+  /** Dollars per pound; defaults to 1.33. */
+  gbpUsd?: number
   trustProxy?: boolean
   fetchMobilootConfig(): Promise<MobilootConfig>
   currentPeriod(config: MobilootConfig): Promise<bigint>
@@ -45,6 +47,7 @@ export interface Deps {
 
 export function buildApp(deps: Deps) {
   const { db, provider } = deps
+  const gbpUsd = deps.gbpUsd ?? 1.33
   const providerFor = (address: string) => (deps.live && deps.liveWallets?.has(address) ? deps.live : provider)
   const providerByMode = (mode: string) =>
     deps.live?.mode === mode ? deps.live : provider.mode === mode ? provider : undefined
@@ -107,7 +110,9 @@ export function buildApp(deps: Deps) {
         treasury: deps.cluster.treasury,
         mobilootProgram: deps.cluster.mobilootProgram,
         providerMode: provider.mode,
-        plan,
+        // monthlyCostUsd keeps older app builds' maths right.
+        plan: { ...plan, monthlyCostUsd: plan.monthlyPriceGbp * gbpUsd },
+        gbpUsd,
         minStakeLamports: config.minStakeLamports.toString(),
         paused: config.paused,
         period: {
