@@ -32,11 +32,11 @@ the Seeker's own wallet or Phantom.
 8. **Withdraw** on the *Stake* tab whenever you like, with no fee. Drop below 0.5
    lootSOL and the line is suspended within a minute; stake again and it resumes.
 
-| Welcome | Home | Stake | Account |
+| Home | Stake | eSIM | Account |
 | --- | --- | --- | --- |
-| <img src="docs/screenshots/welcome.png" width="180" alt="Welcome screen"> | <img src="docs/screenshots/home.png" width="180" alt="Home screen showing how much of the plan the stake funds"> | <img src="docs/screenshots/stake.png" width="180" alt="Stake screen"> | <img src="docs/screenshots/account.png" width="180" alt="Account screen"> |
+| <img src="docs/screenshots/seeker-home.png" width="180" alt="Home: 0.55 SOL staked funds 10% of the plan; Mobiloot Unlimited active"> | <img src="docs/screenshots/seeker-stake.png" width="180" alt="Stake screen with the plan-funding preview"> | <img src="docs/screenshots/seeker-esim.png" width="180" alt="eSIM tab: Mobiloot Unlimited eSIM ready, ICCID ending 0255, Install on this phone"> | <img src="docs/screenshots/seeker-account.png" width="180" alt="Account: Seeker wallet, 0.55 lootSOL"> |
 
-<sub>Captured on localnet; on devnet the chip reads Devnet.</sub>
+<sub>Captured on a Seeker on 11 Oct 2026, with a live Shaka eSIM and the Seeker wallet on devnet.</sub>
 
 ## How it works
 
