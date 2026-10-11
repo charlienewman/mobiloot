@@ -59,8 +59,8 @@ Solflare, set to devnet) before recording.
 
 - [x] Live Shaka eSIMs for allowlisted wallets (`ShakaLiveProvider`,
   [esim-provider.md](esim-provider.md)).
-- [ ] Confirm the $6/mo cost assumption in `api/src/plans.ts` against the real
-  plan price.
+- [x] Price the plan at the real retail price: £10/month unlimited.
+- [ ] Part-funded plans: pay the remainder in USDC or by card ([economics.md](economics.md)).
 
 ## 6. Competition admin
 

@@ -23,32 +23,57 @@ treasury earned   0.0017 lootSOL ≈ 0.0017 SOL
 
 ## Sizing a plan
 
-For a plan with wholesale cost `C` per month, pool yield `Y` and SOL price `P`:
+Mobiloot Unlimited is **£10 a month** (unlimited UK data, calls and texts on a live UK
+MVNO). For a monthly price `C` in pounds, pool yield `Y`, SOL price `P` in dollars and
+`F` dollars per pound:
 
 ```
-stake needed (SOL) = 12 · C / (Y · P)
+stake needed (SOL) = 12 · C · F / (Y · P)
 ```
+
+In pounds the target is fixed, about **£1,765 of staked SOL at 6.8%**; only the yield
+changes it. SOL's price changes how many coins that is.
 
 The app computes this live from the pool's measured yield (the last epoch's
 inflation rewards on the pool's validator stake accounts, annualised) and SOL's
-price from Pyth's on-chain SOL/USD account.
+price from Pyth's on-chain SOL/USD account. On test clusters it uses the 6.8%
+mainnet reference instead, because devnet and localnet rewards say nothing about
+mainnet.
 
-| Plan cost | Yield | SOL price | Stake needed |
+| Yield | SOL at $110 | SOL at $150 | SOL at $200 |
 | ---: | ---: | ---: | ---: |
-| $6/mo | 6.8% | $120 | 8.8 SOL |
-| $6/mo | 6.8% | $200 | 5.3 SOL |
-| $10/mo | 6.8% | $120 | 14.7 SOL |
+| 6.8% | 21.3 SOL | 15.6 SOL | 11.7 SOL |
+| 7.5% (with MEV) | 19.3 SOL | 14.2 SOL | 10.6 SOL |
 
-That is a real amount of capital, which is why the starting audience is Seeker
-owners and SOL holders who already stake, not everyone.
+(£1 = $1.33.) That is real capital, so the plan is designed for partial funding:
+the stake's yield covers what it can and the user pays the rest.
+
+| You stake (6.8%, $110) | Yield pays | You pay |
+| ---: | ---: | ---: |
+| 5 SOL | £2.34 | £7.66 |
+| 10 SOL | £4.69 | £5.31 |
+| 15 SOL | £7.03 | £2.97 |
+| 21 SOL | £10.00 | £0 |
+
+## Part-funded plans (next)
+
+At each renewal, if the stake covers less than 100%, the user pays the difference
+in USDC (Solana Pay) or by card, or opts in to an SPL token allowance that lets
+Mobiloot redeem just enough lootSOL each month. Unpaid, the line pauses after a
+short grace period and resumes as soon as it's paid; the suspend and resume
+machinery already exists (`api/src/coverage.ts`). Today the plan is all or
+nothing at the on-chain threshold.
+
+**VAT:** Mobiloot is below the UK VAT registration threshold today, so the full £10 is
+revenue. Wholesale pricing improves with volume, which offsets VAT once registered.
 
 ## Where the thresholds live
 
 - **On-chain unlock threshold**: `min_stake_lamports` in the program config.
   On mainnet this would be set to the stake that fully funds the plan (plus a
   buffer). On devnet it is 0.5 SOL so anyone can try the flow; the app says so.
-- **Plan cost assumption**: `monthlyCostUsd` in `api/src/plans.ts`
-  (illustrative, not real pricing).
+- **Plan price**: `monthlyPriceGbp` in `api/src/plans.ts`; the dollar rate is
+  `GBP_USD` (default 1.33).
 
 ## Risks the model has to price in
 
