@@ -20,6 +20,11 @@ export interface ShakaConfig {
   referencePrefix: string
   /** Public HTTPS receiver for this app's journeys. Polling works without it. */
   webhookUrl?: string
+  /**
+   * Adult content setting for new lines. Shaka's pre-activated eSIMs ship with it on, so
+   * asking for it off makes Shaka build a fresh eSIM, which can take most of an hour.
+   */
+  adultServices?: boolean
   fetch?: typeof fetch
   timeoutMs?: number
   now?: () => number
@@ -338,7 +343,7 @@ export class ShakaLiveProvider implements MobileProvider {
         subscriber_id: line.subscriber_id,
         plan_id: line.plan_id,
         service_type: 'local',
-        adult_services_enabled: false,
+        adult_services_enabled: this.cfg.adultServices ?? false,
         preactivate_physical_sim: false,
         reference_id: line.subscription_ref,
       }

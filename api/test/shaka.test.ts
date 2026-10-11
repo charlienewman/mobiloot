@@ -24,6 +24,7 @@ class FakeShaka {
   subscribers: any[] = []
   subscriptions: any[] = []
   journeys = new Map<string, { kind: string; status: string; subscriptionId?: number }>()
+  orderBodies: any[] = []
   replays = new Map<string, any>()
   pageSize = 2
   /** New subscriptions start inactive until activate() unless this is set. */
@@ -73,6 +74,7 @@ class FakeShaka {
         q,
       )
     if (method === 'POST' && path === 'journey/new-subscription/') {
+      this.orderBodies.push(body)
       const journeyId = crypto.randomUUID()
       const id = this.nextId++
       this.subscriptions.push({
@@ -171,8 +173,9 @@ class FakeShaka {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 
-function makeProvider(db: Db, shaka: FakeShaka, now = () => Date.now()) {
+function makeProvider(db: Db, shaka: FakeShaka, now = () => Date.now(), extra: { adultServices?: boolean } = {}) {
   return new ShakaLiveProvider(db, {
+    ...extra,
     baseUrl: BASE,
     apiKey: 'test-key',
     planId: 58,
@@ -192,6 +195,14 @@ describe('Shaka live provider', () => {
     shaka = new FakeShaka()
     clock = 1_800_000_000_000
     live = makeProvider(db, shaka, () => clock)
+  })
+
+  test('asks for adult services off by default, or on to match pre-activated eSIMs', async () => {
+    await live.createOrder({ owner: OWNER, planCode: 'loot-essentials', idempotencyKey: 'a' })
+    assert.equal(shaka.orderBodies.at(-1).adult_services_enabled, false)
+    const fast = makeProvider(openDb(':memory:'), shaka, () => clock, { adultServices: true })
+    await fast.createOrder({ owner: OWNER, planCode: 'loot-essentials', idempotencyKey: 'b' })
+    assert.equal(shaka.orderBodies.at(-1).adult_services_enabled, true)
   })
 
   test('provisions one eSIM and reuses the line for later periods', async () => {

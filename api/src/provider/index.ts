@@ -31,6 +31,7 @@ export function createProviders(db: Db): Providers {
         planId: env.SHAKA_PLAN_ID,
         referencePrefix: env.SHAKA_REFERENCE_PREFIX ?? `mobiloot-${env.CLUSTER}`,
         webhookUrl: env.SHAKA_WEBHOOK_URL || undefined,
+        adultServices: env.SHAKA_ADULT_SERVICES,
       })
     : undefined
   return { mock: new MockProvider(), live, liveWallets, testWallets }

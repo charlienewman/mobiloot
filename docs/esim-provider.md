@@ -69,6 +69,7 @@ SHAKA_WEBHOOK_URL=https://<api host>/v1/webhooks/shaka   # optional
 SHAKA_REFERENCE_PREFIX=mobiloot-devnet                   # default: mobiloot-<cluster>
 LIVE_ESIM_WALLETS=<wallet>,<wallet>
 TEST_GRANT_WALLETS=<wallet>    # optional: may order without staking, for testing
+SHAKA_ADULT_SERVICES=true      # optional: match Shaka's pre-activated eSIMs (fast activation)
 ```
 
 With `SHAKA_API_KEY` unset, everyone gets the mock. A `TEST_GRANT_WALLETS` wallet skips

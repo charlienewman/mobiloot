@@ -26,6 +26,11 @@ const Env = z.object({
   SHAKA_PLAN_ID: z.coerce.number().int().positive().default(58),
   /** Namespace for every Shaka reference; defaults to mobiloot-<cluster>. */
   SHAKA_REFERENCE_PREFIX: z.string().optional(),
+  /** true matches Shaka's pre-activated eSIMs, so new lines activate in seconds. */
+  SHAKA_ADULT_SERVICES: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
   /** Wallets (comma or space separated) that get real eSIMs; everyone else gets the mock. */
   LIVE_ESIM_WALLETS: z.string().optional(),
   /**
