@@ -41,7 +41,7 @@ the Seeker's own wallet or Phantom.
 
 | Home | Stake | eSIM | Account |
 | --- | --- | --- | --- |
-| <img src="docs/screenshots/seeker-home.png" width="180" alt="Home: 0.55 SOL staked funds 10% of the plan; Mobiloot Unlimited active"> | <img src="docs/screenshots/seeker-stake.png" width="180" alt="Stake screen with the plan-funding preview"> | <img src="docs/screenshots/seeker-esim.png" width="180" alt="eSIM tab: Mobiloot Unlimited eSIM ready, ICCID ending 0255, Install on this phone"> | <img src="docs/screenshots/seeker-account.png" width="180" alt="Account: Seeker wallet, 0.55 lootSOL"> |
+| <img src="docs/screenshots/seeker-home.png" width="180" alt="Home: 22.994 SOL staked, 107% funded: your £10/mo plan is free; Mobiloot Unlimited active"> | <img src="docs/screenshots/seeker-stake.png" width="180" alt="Stake screen with the plan-funding preview"> | <img src="docs/screenshots/seeker-esim.png" width="180" alt="eSIM tab: Mobiloot Unlimited eSIM ready, ICCID ending 0255, Install on this phone"> | <img src="docs/screenshots/seeker-account.png" width="180" alt="Account: Seeker wallet, 0.55 lootSOL"> |
 
 <sub>Captured on a Seeker on 11 Oct 2026, with a live Shaka eSIM and the Seeker wallet on devnet.</sub>
 
