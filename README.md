@@ -24,6 +24,11 @@ stake SOL ──► lootSOL in your wallet ──► rewards go to the treasury 
 
 ## Try it in 3 minutes (judges start here)
 
+> **Want a real UK line?** [Open an issue](https://github.com/charlienewman/mobiloot/issues/new?title=Real%20eSIM%20please&body=Wallet%20address:%20)
+> with your wallet address and I'll allowlist it. Then the same steps below give
+> you a live eSIM on Shaka's UK network instead of the demo one. You need a phone
+> that supports eSIM.
+
 You need an Android phone (a Seeker is ideal) with a Mobile Wallet Adapter wallet:
 the Seeker's own wallet or Phantom.
 
@@ -41,8 +46,8 @@ the Seeker's own wallet or Phantom.
 6. **Activate** on the *eSIM* tab. This writes this month's plan to Solana for your
    wallet, and you can view it on Solana Explorer.
 7. **Get your eSIM.** Your wallet gets a demo eSIM, marked *Mock eSIM* at the
-   top right. Real eSIMs on Shaka's UK network are limited to invited wallets
-   while we test, and one is running on our Seeker now (see the demo video).
+   top right. Real eSIMs on Shaka's UK network go to allowlisted wallets
+   (see above), and one is running on our Seeker now (see the demo video).
 8. **Withdraw** on the *Stake* tab whenever you like, with no fee. Drop below 0.5
    lootSOL and the line is suspended within a minute; stake again and it resumes.
 
