@@ -146,6 +146,35 @@ Yes, everything is in this repo:
 - webhook signatures;
 - coverage suspension.
 
+## Security audit notes
+
+The hackathon's advisory scanner (Radiants) audited commit `ade54a5`. It reported
+40 findings (2 high, 13 medium, 21 low, 4 info) and gave no score, because its scan
+did not finish (budget exhausted, unresolved calls). The two high findings are not
+exploitable as written.
+
+**High: "missing owner check" on `stake_pool` in `initialize`.** Only the program's
+upgrade authority can call `initialize`:
+- the `program_data` constraints check this
+  ([lib.rs:215–217](anchor/programs/mobiloot/src/lib.rs#L215-L217));
+- it can only run once, because it creates the single `config` PDA
+  ([lib.rs:209](anchor/programs/mobiloot/src/lib.rs#L209)).
+
+So no outside caller can pass a fake pool. The pool's address and owning program are
+recorded at setup, and every `activate` pins the account to both
+([lib.rs:237](anchor/programs/mobiloot/src/lib.rs#L237)). Planned hardening for mainnet
+(defence in depth against operator error): pin the owner to the known stake pool
+program ID at `initialize`.
+
+**High: "type cosplay" in `read_pool`.** `read_pool` checks the SPL stake pool's
+account-type byte. Its only user-facing caller, `activate`, accepts nothing but the
+configured pool address owned by the configured stake pool program, so a look-alike
+account is rejected before it is read.
+
+**Medium: dependency advisories (8).** Known advisories in third-party npm and cargo
+packages. They will be reviewed and upgraded before mainnet, alongside the rest of the
+medium and low findings, most of which the scanner marks "needs review".
+
 ## Run it
 
 Prerequisites: Node 22, Solana CLI 2.1+, and for the app, an Android device or
