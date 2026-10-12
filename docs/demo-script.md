@@ -12,9 +12,9 @@ revealed activation code from a live (non-mock) eSIM.
 | 0:32 | Stake → 1 SOL → preview | "I stake SOL into the lootSOL pool. The preview shows what it does to my plan before I sign." |
 | 0:45 | Tx sheet: wallet → confirming → done | "Real devnet transaction. lootSOL lands in my own wallet, and I can withdraw any time with no fee." |
 | 1:00 | Home: ring, "Where your yield goes" | "Here's the trick. The pool sends 100% of its staking rewards to the Mobiloot treasury, on-chain, every epoch. 1 lootSOL stays 1 SOL. I pay with yield, never principal." |
-| 1:20 | Stake: "What would fully fund my plan?" | "At today's measured yield and Pyth's SOL price, about 9 SOL covers this plan for good. On devnet we unlock at half a SOL so anyone can try it, and the app says so." |
+| 1:20 | Stake: "What would fully fund my plan?" | "At today's measured yield and Pyth's SOL price, about 21 SOL covers the £10 plan for good. On devnet we unlock at half a SOL so anyone can try it, and the app says so." |
 | 1:35 | eSIM → **Activate plan** → wallet | "Activating writes my entitlement to Solana for this billing period. Our program checks my lootSOL at the pool's live rate. No personal data goes on-chain." |
-| 1:55 | **Get my eSIM** → stepper → SIM card | "The backend verifies that entitlement on-chain and orders the eSIM. Here it's the mock provider; a real eSIM provider plugs into the same interface." |
+| 1:55 | **Get my eSIM** → stepper → SIM card | "The backend verifies that entitlement on-chain and orders the eSIM. On an invited wallet it's a real line from a live UK MVNO; everyone else gets the mock provider through the same interface." |
 | 2:10 | Show code (mock) → QR → **Open SIM settings** | "Code, QR, or straight into Android's SIM settings." |
 | 2:20 | Home: active plan, data usage, renews in N days | "Each day I can see my data, my funding and my renewal. As long as my stake covers it, it renews: no card, no bill." |
 | 2:32 | Wordmark | "Mobiloot. Your stake, your signal. Built for Solana Mobile." |

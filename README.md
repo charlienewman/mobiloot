@@ -10,6 +10,11 @@
 **A mobile plan paid for by your staking yield.** Stake SOL, keep your principal,
 and let the rewards pay for your phone plan. There's no card and no monthly bill.
 
+Powered by a live UK MVNO and ready to launch at **£10 a month, unlimited**: no
+telco contract, just a smart contract. About 21 SOL of stake pays for the whole
+plan at today's yield; a smaller stake pays part of it, and paying the rest in
+USDC is next on the [roadmap](docs/next-steps.md). See [the economics](docs/economics.md).
+
 Built for **Clock In, the Solana Mobile hackathon**, as an Android-first app for
 Seeker and any Android phone with a Mobile Wallet Adapter wallet.
 
@@ -22,7 +27,9 @@ stake SOL ──► lootSOL in your wallet ──► rewards go to the treasury 
 You need an Android phone (a Seeker is ideal) with a Mobile Wallet Adapter wallet:
 the Seeker's own wallet or Phantom.
 
-1. **Install the APK** (`mobiloot-0.1.0.apk`, attached to the submission).
+1. **Install the APK:**
+   [mobiloot-0.1.0.apk](https://github.com/charlienewman/mobiloot/releases/download/v0.1.0/mobiloot-0.1.0.apk)
+   (also on the [v0.1.0 release](https://github.com/charlienewman/mobiloot/releases/tag/v0.1.0)).
 2. **Switch your wallet to devnet.** Mobiloot runs on devnet, so no real money is
    involved. In the Seeker wallet, change the network to Devnet in its settings.
    In Phantom, go to Settings → Developer Settings → Testnet Mode → Solana Devnet.
@@ -81,16 +88,15 @@ The app always shows which network and eSIM provider are active.
 Prerequisites: Node 22, Solana CLI 2.1+, and for the app, an Android device or
 emulator with an MWA wallet (Solana's
 [fakewallet](https://github.com/solana-mobile/mobile-wallet-adapter/releases)
-works on emulators). Anchor 0.31 is only needed to rebuild the program.
+works on emulators). Anchor 0.31 builds the program for the local run.
 
 ### Everything local (no credentials, about 5 minutes)
 
 ```bash
 npm install
-npm run localnet                          # terminal 1: validator with 25 s epochs
+npm run program:build                     # needs Anchor 0.31
+npm run localnet                          # terminal 1: validator with 25 s epochs, mobiloot preloaded
 CLUSTER=localnet npm run pool:setup       # lootSOL pool with a 100% fee to the treasury
-npm run program:build && solana program deploy -ul anchor/target/deploy/mobiloot.so \
-  --program-id keys/program/mobiloot-keypair.json   # or restart localnet to preload it
 CLUSTER=localnet npm -w ops run setup:program
 CLUSTER=localnet npm run api              # terminal 2: API on :8787, mock eSIM provider
 

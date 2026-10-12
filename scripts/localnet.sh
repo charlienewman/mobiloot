@@ -23,7 +23,8 @@ ARGS=(
   --bpf-program $TOKEN_METADATA_PROGRAM "$PROGRAMS/$TOKEN_METADATA_PROGRAM.so"
 )
 if [[ -f "$ROOT/anchor/target/deploy/mobiloot.so" ]]; then
-  PROGRAM_ID=$(solana address -k "$ROOT/anchor/target/deploy/mobiloot-keypair.json")
+  # The declared id, so a fresh clone works without the program's keypair.
+  PROGRAM_ID=$(sed -n 's/^declare_id!("\(.*\)");/\1/p' "$ROOT/anchor/programs/mobiloot/src/lib.rs")
   ARGS+=(--upgradeable-program "$PROGRAM_ID" "$ROOT/anchor/target/deploy/mobiloot.so" "$HOME/.config/solana/id.json")
 fi
 exec solana-test-validator --ledger "$LEDGER" --slots-per-epoch 64 "${ARGS[@]}" "$@"
