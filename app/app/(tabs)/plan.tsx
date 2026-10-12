@@ -116,6 +116,7 @@ function Feature({ icon, label }: { icon: React.ComponentProps<typeof Feather>['
 
 /** `entitlementAddress` is absent for a test-grant wallet, which orders without staking. */
 function Provisioning({ entitlementAddress, order }: { entitlementAddress?: string; order?: EsimOrder }) {
+  const me = useMe()
   const { token } = useSession()
   const { explorer, config } = useMobiloot()
   const queryClient = useQueryClient()
@@ -134,7 +135,11 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress?: stri
       done: true,
     },
     {
-      label: (order?.providerMode ?? config.providerMode) === 'mock' ? 'eSIM ordered (mock provider)' : 'eSIM ordered',
+      // Before the order exists, this wallet's provider decides; the server default is the mock.
+      label:
+        (order?.providerMode ?? (me.data?.liveEsim ? 'shaka_live' : config.providerMode)) === 'mock'
+          ? 'eSIM ordered (mock provider)'
+          : 'eSIM ordered',
       done: ordered,
       active: provision.isPending,
     },
