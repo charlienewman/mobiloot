@@ -88,6 +88,64 @@ price. See [docs/economics.md](docs/economics.md).
 
 The app always shows which network and eSIM provider are active.
 
+## Questions judges ask
+
+**Why do real eSIMs need an allowlist? What does a normal Seeker user see at launch?**
+On devnet, SOL is free, and every real eSIM is a real paid line, so live lines are
+invitation-only for now. The flow is the same for everyone: connect, stake, activate,
+get my eSIM, install. Only the provider behind it changes. The API chooses the provider
+per wallet through one `MobileProvider` interface
+([docs/esim-provider.md](docs/esim-provider.md)). At launch, any wallet with a valid
+on-chain entitlement gets the live provider, and the allowlist goes away.
+
+**What happens when SOL's price or the yield drops?**
+The plan is priced in pounds, so the stake needed moves with SOL's price and the pool's
+yield. The app recomputes it live from the pool's measured yield and Pyth's SOL/USD
+price, and shows how much of the plan your stake funds before you sign. Today the plan
+is all-or-nothing at the on-chain threshold: drop below it and the line is suspended
+within a minute, then resumes when you stake again. This has been tested on a live line.
+The next step is part-funded plans:
+- the yield covers what it can;
+- you pay the rest in USDC, by card, or through an opt-in lootSOL allowance;
+- if the rest goes unpaid, the line pauses after a grace period.
+
+Rewards arrive after each epoch, so the treasury carries that float, and mainnet
+thresholds keep a buffer above break-even. See [docs/economics.md](docs/economics.md)
+for the formula, tables and risks.
+
+**How does this get from devnet to mainnet?**
+- Deploy the same Anchor program, then launch lootSOL through Sanctum's stake pool
+  program, which gives it liquidity and instant exits through Infinity.
+- Put the pool manager, program config and upgrade authority behind a Squads multisig.
+- Set `min_stake_lamports` to the full-funding stake plus a buffer.
+- Publish on the Solana dApp Store, with Digital Asset Links so wallets show the app
+  as verified.
+
+Devnet balances don't migrate: mainnet users stake fresh. Devnet addresses are in
+[config/devnet.json](config/devnet.json) and below.
+
+**Where does it work, and who handles support and compliance?**
+Today, the UK. The plan is unlimited UK data, calls and texts on Shaka, a live UK MVNO.
+Shaka carries the network side: the host-network relationship, numbers and the operator-side
+telecom obligations. Mobiloot is the retail front end and handles customer support and
+billing. Outside the UK, the provider interface is designed to take more networks: any
+operator or eSIM aggregator with a provisioning API, for example a travel data eSIM
+for users abroad.
+
+**Can I check the code and the security model?**
+Yes, everything is in this repo:
+- the Anchor program: [anchor/programs/mobiloot](anchor/programs/mobiloot);
+- the Android app: [app](app);
+- the API: [api](api);
+- the threat model: [docs/threat-model.md](docs/threat-model.md).
+
+`npm test` runs 44 tests, covering:
+- Sign In With Solana replay and forgery;
+- entitlement checks;
+- idempotent eSIM orders;
+- webhook signatures;
+- coverage suspension.
+
 ## Run it
 
 Prerequisites: Node 22, Solana CLI 2.1+, and for the app, an Android device or
