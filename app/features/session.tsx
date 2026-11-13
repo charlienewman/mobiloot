@@ -21,6 +21,11 @@ interface SessionContext {
   error?: string
   connect(): Promise<void>
   disconnect(): Promise<void>
+  /**
+   * Deletes this wallet's Mobiloot account and signs out. 'pending' means a real line
+   * was suspended and its record is kept until the line is closed.
+   */
+  deleteAccount(): Promise<'deleted' | 'pending'>
   /** Called when the API rejects the token (expired or revoked). */
   invalidate(): void
 }
@@ -92,13 +97,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await wallet.disconnect().catch(() => {})
   }, [session, persist, queryClient, wallet])
 
+  const deleteAccount = useCallback(async () => {
+    const { status } = await api<{ status: 'deleted' | 'pending' }>('/v1/me', {
+      method: 'DELETE',
+      token: session?.token,
+    })
+    await persist(null)
+    queryClient.clear()
+    await wallet.disconnect().catch(() => {})
+    return status
+  }, [session, persist, queryClient, wallet])
+
   const invalidate = useCallback(() => void persist(null), [persist])
 
   // The wallet may remember a different account than our session (e.g. switched in the
   // wallet app). Treat the session as the source of truth for identity.
   const value = useMemo<SessionContext>(
-    () => ({ address: session?.address, token: session?.token, ready, busy, error, connect, disconnect, invalidate }),
-    [session, ready, busy, error, connect, disconnect, invalidate],
+    () => ({ address: session?.address, token: session?.token, ready, busy, error, connect, disconnect, deleteAccount, invalidate }),
+    [session, ready, busy, error, connect, disconnect, deleteAccount, invalidate],
   )
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

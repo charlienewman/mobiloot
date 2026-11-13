@@ -11,6 +11,7 @@ import { BrandMark } from '@/components/brand'
 import { Header } from '@/components/header'
 import { TxSheet } from '@/components/tx-sheet'
 import { Button, Card, Chip, Divider, KeyValue, Notice, ProgressBar, Row, Screen, Stack, Text } from '@/components/ui'
+import { LINKS } from '@/constants/env'
 import { colors, radius, space } from '@/constants/theme'
 import { api, type EsimOrder, type RevealedEsim } from '@/features/api'
 import { useMobiloot } from '@/features/config'
@@ -201,7 +202,7 @@ function Provisioning({ entitlementAddress, order }: { entitlementAddress?: stri
 
 function EsimReady({ order }: { order: EsimOrder }) {
   const { config } = useMobiloot()
-  const { token } = useSession()
+  const { token, address } = useSession()
   const usage = useUsage(!order.suspended)
   const [revealed, setRevealed] = useState<RevealedEsim | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
@@ -313,9 +314,19 @@ function EsimReady({ order }: { order: EsimOrder }) {
         ) : null}
         {install.isError ? <Notice tone="danger">{(install.error as Error).message}</Notice> : null}
         {!live ? (
-          <Notice tone="info">
-            This is a mock eSIM for the demo. Its code points to a test server and will not install a live line.
-          </Notice>
+          <>
+            <Notice tone="info">
+              Preview: this is a demo eSIM. Its code points to a test server and will not install a live line.
+              Real UK lines are in a pilot for invited wallets.
+            </Notice>
+            <Button
+              title="Ask to join the pilot"
+              kind="ghost"
+              onPress={() =>
+                Linking.openURL(`${LINKS.support}?subject=${encodeURIComponent('Mobiloot pilot')}&body=${encodeURIComponent(`My wallet: ${address ?? ''}`)}`)
+              }
+            />
+          </>
         ) : null}
         {revealed ? (
           <Stack gap={space.md}>

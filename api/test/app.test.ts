@@ -314,6 +314,34 @@ describe('eSIM provisioning', () => {
     assert.equal(res.statusCode, 403)
   })
 
+  test('deleting an account erases its sessions and demo orders, and the wallet can start again', async () => {
+    ctx.entitle(kp)
+    const other = Keypair.generate()
+    ctx.entitle(other)
+    const o = await signIn(ctx.app, other)
+    const otherAuth = {
+      authorization: `Bearer ${(await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(o) })).json().token}`,
+    }
+    await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })
+    await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: otherAuth })
+    assert.equal((await ctx.app.inject({ method: 'DELETE', url: '/v1/me' })).statusCode, 401)
+    const res = await ctx.app.inject({ method: 'DELETE', url: '/v1/me', headers: auth })
+    assert.equal(res.json().status, 'deleted')
+    const count = (t: string, a: string) =>
+      (ctx.deps.db.prepare(`SELECT COUNT(*) AS n FROM ${t} WHERE address = ?`).get(a) as { n: number }).n
+    for (const t of ['orders', 'sessions', 'challenges', 'account_deletions'])
+      assert.equal(count(t, kp.publicKey.toBase58()), 0)
+    // The old session no longer works, and nobody else's data was touched.
+    assert.equal((await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: auth })).statusCode, 401)
+    assert.equal(count('orders', other.publicKey.toBase58()), 1)
+    assert.equal((await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: otherAuth })).statusCode, 200)
+    // Signing in again starts from nothing.
+    const s = await signIn(ctx.app, kp)
+    const token = (await ctx.app.inject({ method: 'POST', url: '/v1/auth/verify', payload: verifyBody(s) })).json().token
+    const me = await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: { authorization: `Bearer ${token}` } })
+    assert.equal(me.json().esim, undefined)
+  })
+
   test('a provider outage leaves the order retryable', async () => {
     ctx.entitle(kp)
     const create = ctx.deps.provider.createOrder

@@ -70,6 +70,11 @@ export function openDb(file: string): Db {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+    -- Wallets that asked for deletion but still have a real line to close; see account.ts.
+    CREATE TABLE IF NOT EXISTS account_deletions (
+      address TEXT PRIMARY KEY,
+      requested_at INTEGER NOT NULL
+    );
     -- Verified Shaka webhook deliveries, for dedupe only (no payloads are kept).
     CREATE TABLE IF NOT EXISTS shaka_events (
       idempotency_id TEXT PRIMARY KEY,

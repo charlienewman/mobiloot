@@ -5,10 +5,10 @@ import * as Haptics from 'expo-haptics'
 import * as WebBrowser from 'expo-web-browser'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { Platform, Pressable } from 'react-native'
+import { Alert, Linking, Platform, Pressable } from 'react-native'
 import { Header } from '@/components/header'
 import { Button, Card, Chip, Divider, KeyValue, Row, Screen, Stack, Text } from '@/components/ui'
-import { API_URL } from '@/constants/env'
+import { API_URL, LINKS } from '@/constants/env'
 import { colors, space } from '@/constants/theme'
 import { useMobiloot } from '@/features/config'
 import { useMe, useSolBalance } from '@/features/data'
@@ -19,12 +19,44 @@ import { useSession } from '@/features/session'
 const isSeeker = Platform.OS === 'android' && /seeker/i.test(String((Platform.constants as any)?.Model ?? ''))
 
 export default function Account() {
-  const { address, disconnect } = useSession()
+  const { address, disconnect, deleteAccount } = useSession()
   const { config, explorer } = useMobiloot()
   const balance = useSolBalance()
   const me = useMe()
   const router = useRouter()
   const [copied, setCopied] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const confirmDelete = () =>
+    Alert.alert(
+      'Delete your Mobiloot account?',
+      me.data?.liveEsim
+        ? 'Your mobile line will be suspended and then closed, and your Mobiloot data deleted. Your SOL is not affected: withdraw your stake first if you want it back in SOL.'
+        : 'This deletes your sign-in sessions and eSIM orders from Mobiloot. Your SOL and lootSOL are not affected, and transactions already on Solana stay public.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete account',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true)
+            try {
+              const status = await deleteAccount()
+              Alert.alert(
+                'Account deleted',
+                status === 'pending'
+                  ? 'Your line is suspended and you are signed out. We will close the line and delete the remaining records within 30 days.'
+                  : 'Your Mobiloot data has been deleted and you are signed out.',
+              )
+            } catch (e: any) {
+              Alert.alert("Couldn't delete your account", String(e?.message ?? e))
+            } finally {
+              setDeleting(false)
+            }
+          },
+        },
+      ],
+    )
 
   const open = (path: string) => WebBrowser.openBrowserAsync(explorer(path))
 
@@ -76,6 +108,15 @@ export default function Account() {
       </Card>
 
       <Card>
+        <Text variant="heading">Legal and support</Text>
+        <LinkRow icon="shield" label="Privacy policy" onPress={() => WebBrowser.openBrowserAsync(LINKS.privacy)} />
+        <Divider />
+        <LinkRow icon="file-text" label="Terms of use" onPress={() => WebBrowser.openBrowserAsync(LINKS.terms)} />
+        <Divider />
+        <LinkRow icon="mail" label="Contact support" onPress={() => Linking.openURL(LINKS.support)} />
+      </Card>
+
+      <Card>
         <Text variant="heading">Diagnostics</Text>
         <KeyValue label="App version" value={`${Constants.expoConfig?.version ?? '?'}`} />
         <KeyValue label="Network" value={config.cluster} />
@@ -88,6 +129,13 @@ export default function Account() {
 
       <Stack gap={space.sm}>
         <Button title="Disconnect wallet" kind="danger" onPress={disconnect} />
+        <Button
+          title={deleting ? 'Deleting…' : 'Delete my account'}
+          kind="ghost"
+          loading={deleting}
+          onPress={confirmDelete}
+          accessibilityHint="Deletes the data Mobiloot holds about this wallet"
+        />
         <Text variant="small" color={colors.textFaint} style={{ textAlign: 'center' }}>
           Mobiloot never asks for your seed phrase. Your lootSOL stays in your wallet.
         </Text>

@@ -1,9 +1,11 @@
 import { Feather } from '@expo/vector-icons'
 import { Redirect, useRouter } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
 import { Pressable, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { BrandMark } from '@/components/brand'
 import { Button, Chip, Notice, Row, Stack, Text } from '@/components/ui'
+import { LINKS } from '@/constants/env'
 import { colors, radius, space } from '@/constants/theme'
 import { useMobiloot } from '@/features/config'
 import { useSession } from '@/features/session'
@@ -94,6 +96,27 @@ export default function Welcome() {
               How does this work?
             </Text>
           </Pressable>
+          <Text variant="small" color={colors.textFaint} style={{ textAlign: 'center' }}>
+            By connecting you agree to the{' '}
+            <Text
+              variant="small"
+              color={colors.textMuted}
+              accessibilityRole="link"
+              onPress={() => WebBrowser.openBrowserAsync(LINKS.terms)}
+            >
+              Terms
+            </Text>{' '}
+            and{' '}
+            <Text
+              variant="small"
+              color={colors.textMuted}
+              accessibilityRole="link"
+              onPress={() => WebBrowser.openBrowserAsync(LINKS.privacy)}
+            >
+              Privacy policy
+            </Text>
+            .
+          </Text>
         </Stack>
       </View>
     </SafeAreaView>

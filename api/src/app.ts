@@ -6,6 +6,7 @@ import Fastify, { type FastifyRequest } from 'fastify'
 import { periodBounds, type Entitlement, type MobilootConfig } from '@mobiloot/shared'
 import { z } from 'zod'
 import { AuthError, createChallenge, revokeSession, sessionAddress, verifySignIn } from './auth'
+import { eraseAccount, isClosing, liveLines } from './account'
 import { createCoverage } from './coverage'
 import type { Db, OrderRow } from './db'
 import { planByCode, PLANS } from './plans'
@@ -180,6 +181,19 @@ export function buildApp(deps: Deps) {
     })
 
     /**
+     * Deletes the caller's account. Demo data goes at once. A real line is suspended
+     * here and its record kept until the line is closed with the network (account.ts).
+     */
+    app.delete('/v1/me', strict, async (req) => {
+      const address = requireWallet(req).toBase58()
+      for (const line of liveLines(db, address))
+        await providerByMode(line.provider_mode)?.suspend?.(line.provider_order_id)
+      const status = eraseAccount(db, address)
+      req.log.info({ status }, 'account deletion')
+      return { status }
+    })
+
+    /**
      * Provisions the eSIM for the caller's current-period entitlement. Idempotent: one
      * order per (wallet, period, provider), so retries and double taps are harmless.
      */
@@ -188,6 +202,8 @@ export function buildApp(deps: Deps) {
       const config = await deps.fetchMobilootConfig()
       const period = await deps.currentPeriod(config)
       const address = owner.toBase58()
+      if (isClosing(db, address))
+        throw new HttpError(409, 'This account is being deleted. Email support@mobiloot.com to keep it.')
       const entitlement = await deps.fetchEntitlement(owner, period)
       const holdings = await deps.fetchHoldings(owner)
       // A test grant stands in for the on-chain entitlement and the stake behind it.

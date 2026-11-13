@@ -6,6 +6,7 @@ import nacl from 'tweetnacl'
 import type { Entitlement, MobilootConfig } from '@mobiloot/shared'
 import { buildApp } from '../src/app'
 import { formatSiwsMessage } from '../src/auth'
+import { purgeAccount } from '../src/account'
 import { createCoverage } from '../src/coverage'
 import { openDb, type Db } from '../src/db'
 import { MockProvider } from '../src/provider/mock'
@@ -523,6 +524,34 @@ describe('live eSIMs in the API', () => {
     assert.equal(ctx.shaka.subscriptions.length, 1)
     const line = ctx.live.lineByAddress(liveKp.publicKey.toBase58())!
     assert.equal(line.suspend_wanted, 0)
+  })
+
+  test('deleting an account with a real line suspends it and keeps the record until purged', async () => {
+    const address = liveKp.publicKey.toBase58()
+    const auth = await signIn(liveKp)
+    await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: auth })
+    const res = await ctx.app.inject({ method: 'DELETE', url: '/v1/me', headers: auth })
+    assert.equal(res.json().status, 'pending')
+    assert.equal(ctx.shaka.posts('journey/suspend-sim/').length, 1)
+    assert.equal(ctx.live.lineByAddress(address)!.suspend_wanted, 1)
+    // The session is gone, the activation code is scrubbed, the line record remains.
+    assert.equal((await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: auth })).statusCode, 401)
+    const order = ctx.db.prepare('SELECT activation_code, suspended_at FROM orders WHERE address = ?').get(address) as any
+    assert.equal(order.activation_code, null)
+    assert.ok(order.suspended_at)
+    ctx.shaka.completeJourneys()
+    // Still holding enough stake does not bring the line back, and no new eSIM can be ordered.
+    const again = await signIn(liveKp)
+    const me = (await ctx.app.inject({ method: 'GET', url: '/v1/me', headers: again })).json()
+    assert.equal(me.esim.suspended, true)
+    assert.equal((await ctx.app.inject({ method: 'POST', url: '/v1/esim', headers: again })).statusCode, 409)
+    assert.equal(ctx.shaka.posts('journey/unsuspend-sim/').length, 0)
+    // The operator closes the line with the network, then purges.
+    const counts = purgeAccount(ctx.db, address)
+    assert.equal(counts.lines, 1)
+    assert.equal(counts.requests, 1)
+    for (const t of ['orders', 'sessions', 'shaka_lines', 'account_deletions'])
+      assert.equal((ctx.db.prepare(`SELECT COUNT(*) AS n FROM ${t} WHERE address = ?`).get(address) as any).n, 0)
   })
 
   test('webhooks: verified, deduplicated, and only act on our own lines', async () => {

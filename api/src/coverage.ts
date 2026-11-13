@@ -5,6 +5,7 @@
 // so a given stake backs at most one active line at a time. A live line also outlives
 // its period, so one whose wallet hasn't unlocked the current period is suspended too.
 import { PublicKey } from '@solana/web3.js'
+import { isClosing } from './account'
 import type { Db, OrderRow } from './db'
 import type { MobileProvider } from './provider'
 
@@ -22,7 +23,9 @@ export function createCoverage({ db, providerByMode, fetchHoldings, exempt }: Co
     if (order.status !== 'ready' || !order.provider_order_id) return order
     const provider = providerByMode(order.provider_mode)
     if (!provider) return order
-    const covered = stakeLamports >= minLamports || Boolean(exempt?.(order.address))
+    // A wallet that asked to be deleted keeps its line suspended whatever it holds.
+    const covered =
+      !isClosing(db, order.address) && (stakeLamports >= minLamports || Boolean(exempt?.(order.address)))
     if (!covered && !order.suspended_at) {
       await provider.suspend?.(order.provider_order_id)
       db.prepare('UPDATE orders SET suspended_at = ?, updated_at = ? WHERE id = ?').run(

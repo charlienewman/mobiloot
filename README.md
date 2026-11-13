@@ -139,13 +139,14 @@ Yes, everything is in this repo:
 - the API: [api](api);
 - the threat model: [docs/threat-model.md](docs/threat-model.md).
 
-`npm test` runs 50 tests (with a local validator running), covering:
+`npm test` runs 52 tests (with a local validator running), covering:
 - the program's guards on a real validator, including the stake pool owner pin;
 - Sign In With Solana replay and forgery;
 - entitlement checks;
 - idempotent eSIM orders;
 - webhook signatures;
-- coverage suspension.
+- coverage suspension;
+- account deletion, for demo data and for wallets with a real line.
 
 ## Security audit notes
 
