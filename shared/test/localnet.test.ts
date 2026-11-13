@@ -56,14 +56,21 @@ describe('lootSOL + entitlement on localnet', { skip }, () => {
   async function send(signer: Keypair, ...ixs: TransactionInstruction[]) {
     return sendAndConfirmTransaction(connection, new Transaction().add(...ixs), [signer], { commitment: 'confirmed' })
   }
-  async function deposit(user: Keypair, sol: number) {
+  async function deposit(user: Keypair, sol: number, retry = true): Promise<void> {
     pool = await fetchStakePool(connection, pool.address)
-    await send(
-      user,
-      ...(await refreshIxs(connection, pool)),
-      createAssociatedTokenAccountIdempotent(user.publicKey, user.publicKey, pool.poolMint),
-      depositSolIx(pool, user.publicKey, BigInt(sol * LAMPORTS_PER_SOL)),
-    )
+    try {
+      await send(
+        user,
+        ...(await refreshIxs(connection, pool)),
+        createAssociatedTokenAccountIdempotent(user.publicKey, user.publicKey, pool.poolMint),
+        depositSolIx(pool, user.publicKey, BigInt(sol * LAMPORTS_PER_SOL)),
+      )
+    } catch (e) {
+      // Localnet epochs last ~25 s, so one can roll over between building the refresh
+      // and landing the deposit (stake pool error 17: pool out of date). Retry once.
+      if (retry && /"Custom":17\b|custom program error: 0x11\b/.test(String(e))) return deposit(user, sol, false)
+      throw e
+    }
   }
   const tokens = async (owner: PublicKey) =>
     BigInt((await connection.getTokenAccountBalance(associatedTokenAddress(owner, pool.poolMint))).value.amount)

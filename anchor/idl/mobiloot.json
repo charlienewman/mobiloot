@@ -185,7 +185,7 @@
         {
           "name": "stake_pool",
           "docs": [
-            "as the trusted stake pool program."
+            "stake pool account by `read_pool`."
           ]
         },
         {
@@ -364,6 +364,11 @@
       "code": 6010,
       "name": "StalePool",
       "msg": "The stake pool has not been updated this epoch"
+    },
+    {
+      "code": 6011,
+      "name": "UntrustedStakePoolProgram",
+      "msg": "Stake pool is not owned by the trusted stake pool program"
     }
   ],
   "types": [

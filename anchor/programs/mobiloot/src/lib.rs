@@ -14,6 +14,10 @@ use anchor_spl::token::TokenAccount;
 
 declare_id!("ALt9aMm6fdhbtdRq9ftbdyQGKkFjoimGfRHNEMtHiWcp");
 
+/// Sanctum's deployment of the SPL stake pool program (same address on devnet and
+/// mainnet). `initialize` only accepts a pool owned by this program.
+pub const STAKE_POOL_PROGRAM_ID: Pubkey = pubkey!("SP12tWFxD9oJsVWNavTTBZvMbA6gkAmxtVgxdqvyvhY");
+
 /// Byte offsets inside an SPL stake pool account (identical in the official program
 /// and Sanctum's fork).
 mod stake_pool_layout {
@@ -208,8 +212,9 @@ pub struct Initialize<'info> {
     pub admin: Signer<'info>,
     #[account(init, payer = admin, space = 8 + Config::INIT_SPACE, seeds = [b"config"], bump)]
     pub config: Account<'info, Config>,
-    /// CHECK: validated as a stake pool account by `read_pool`; its owner is recorded
-    /// as the trusted stake pool program.
+    /// CHECK: must be owned by the pinned stake pool program, then validated as a
+    /// stake pool account by `read_pool`.
+    #[account(owner = STAKE_POOL_PROGRAM_ID @ MobilootError::UntrustedStakePoolProgram)]
     pub stake_pool: UncheckedAccount<'info>,
     /// Only the program's upgrade authority may create the config.
     #[account(constraint = program.programdata_address()? == Some(program_data.key()))]
@@ -286,4 +291,6 @@ pub enum MobilootError {
     MathOverflow,
     #[msg("The stake pool has not been updated this epoch")]
     StalePool,
+    #[msg("Stake pool is not owned by the trusted stake pool program")]
+    UntrustedStakePoolProgram,
 }

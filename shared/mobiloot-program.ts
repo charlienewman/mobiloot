@@ -28,6 +28,7 @@ export const MOBILOOT_ERRORS: Record<number, string> = {
   6008: 'Invalid configuration',
   6009: 'Arithmetic overflow',
   6010: 'The stake pool needs its epoch update first. Try again.',
+  6011: 'That stake pool is not run by the trusted stake pool program.',
 }
 
 export interface ConfigParams {
