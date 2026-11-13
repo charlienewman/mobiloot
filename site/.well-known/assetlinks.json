@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mobiloot.app",
+      "sha256_cert_fingerprints": [
+        "63:6B:94:C3:5C:4D:BD:11:0D:B9:EA:7A:7C:1A:0B:7E:E2:07:61:6E:8D:5C:C8:CC:C1:7E:1F:B8:BD:30:E3:3C"
+      ]
+    }
+  }
+]

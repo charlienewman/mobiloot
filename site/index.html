@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Mobiloot · Stake once. Stay connected.</title>
+    <meta
+      name="description"
+      content="Stake SOL once and let the staking rewards pay for an unlimited UK mobile plan, delivered as an eSIM in seconds. Now in preview on Solana Seeker."
+    />
+    <meta name="theme-color" content="#08080a" />
+    <link rel="canonical" href="https://mobiloot.com/" />
+    <link rel="icon" href="/assets/img/mobiloot-loop.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mobiloot.com/" />
+    <meta property="og:title" content="Mobiloot · Stake once. Stay connected." />
+    <meta
+      property="og:description"
+      content="Your staking rewards pay your phone bill. An unlimited UK plan, delivered as an eSIM in seconds."
+    />
+    <meta property="og:image" content="https://mobiloot.com/assets/img/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preload" href="/assets/fonts/SpaceGrotesk.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/DMSans.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script>
+      document.documentElement.classList.remove('no-js')
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="nav" id="nav">
+      <div class="wrap">
+        <a class="logo" href="/" aria-label="Mobiloot home">
+          <img src="/assets/img/mobiloot-wordmark-on-dark.svg" alt="mobiloot" width="140" height="26" />
+        </a>
+        <nav class="nav-links" aria-label="Sections">
+          <a href="#how">How it works</a>
+          <a href="#maths">The maths</a>
+          <a href="#built">How it's built</a>
+          <a href="#status">Where we are</a>
+          <a href="#faq">Questions</a>
+        </nav>
+        <a class="btn btn-primary btn-sm" href="#get">Get the preview</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero">
+        <div class="wrap">
+          <span class="pill reveal"><i></i>Preview on Solana devnet · built for Seeker</span>
+          <h1 class="reveal" style="--d: 0.05s">Your phone bill, <br /><span class="grad">paid by your stake.</span></h1>
+          <p class="lede reveal" style="--d: 0.12s">
+            Stake SOL once. The staking rewards pay for an unlimited UK mobile plan, delivered to your phone as an
+            eSIM in seconds. Your SOL stays yours.
+          </p>
+          <div class="cta reveal" style="--d: 0.18s">
+            <a class="btn btn-primary" href="#get">Get the preview</a>
+            <a class="btn btn-ghost" href="#how">See how it works</a>
+          </div>
+          <p class="hero-note reveal" style="--d: 0.22s">Stake once. Stay connected.</p>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <img class="glow" src="/assets/img/mobiloot-loop.svg" alt="" />
+          <img class="loop" src="/assets/img/mobiloot-loop.svg" alt="" />
+          <div class="phone" id="heroPhone">
+            <div class="screen">
+              <img src="/assets/img/screen-home.webp" alt="" width="720" height="1602" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="manifesto pad">
+        <div class="wrap">
+          <p id="manifesto">
+            No contract. No direct debit. No bill at the end of the month. You put your SOL to work once, and what it
+            earns keeps you connected, for as long as you leave it there.
+          </p>
+        </div>
+      </section>
+
+      <section class="strip" aria-label="Key facts">
+        <div class="wrap">
+          <div class="reveal">
+            <b>£10</b><span>a month of unlimited UK data, calls and texts, paid by rewards</span>
+          </div>
+          <div class="reveal" style="--d: 0.06s"><b>1:1</b><span>your SOL back whenever you withdraw</span></div>
+          <div class="reveal" style="--d: 0.12s"><b>0%</b><span>fee to withdraw your stake</span></div>
+          <div class="reveal" style="--d: 0.18s">
+            <b>Seconds</b><span>from activating your plan to a live line, in our tests</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pad" id="how">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow">How it works</span>
+            <h2>Three taps between your wallet and a working number.</h2>
+          </div>
+          <div class="how-grid">
+            <div class="steps">
+              <article class="step on" data-screen="stake">
+                <span class="n">01</span>
+                <h3>Stake SOL from your own wallet.</h3>
+                <p>
+                  You receive lootSOL, one for every SOL you put in. It sits in your wallet, not ours, and you can
+                  turn it back into SOL at any time.
+                </p>
+                <div class="phone">
+                  <div class="screen">
+                    <img src="/assets/img/screen-stake.webp" alt="The Stake screen in the Mobiloot app" loading="lazy" width="720" height="1602" />
+                  </div>
+                </div>
+              </article>
+              <article class="step" data-screen="home">
+                <span class="n">02</span>
+                <h3>Your rewards pay for the plan.</h3>
+                <p>
+                  The pool sends its staking rewards to the plan instead of to you. A single on-chain transaction
+                  activates your month, and the app shows how much of the plan your stake covers.
+                </p>
+                <div class="phone">
+                  <div class="screen">
+                    <img src="/assets/img/screen-home.webp" alt="The Home screen showing a plan that is 107% funded" loading="lazy" width="720" height="1602" />
+                  </div>
+                </div>
+              </article>
+              <article class="step" data-screen="esim">
+                <span class="n">03</span>
+                <h3>Install the eSIM. You're connected.</h3>
+                <p>
+                  One tap opens Android's eSIM installer with your code filled in. No shop, no plastic SIM, no
+                  waiting for the post.
+                </p>
+                <div class="phone">
+                  <div class="screen">
+                    <img src="/assets/img/screen-esim.webp" alt="The eSIM screen with a line ready to install" loading="lazy" width="720" height="1602" />
+                  </div>
+                </div>
+              </article>
+            </div>
+            <div class="how-visual" aria-hidden="true">
+              <div class="halo"></div>
+              <div class="phone">
+                <div class="screen">
+                  <img class="on" data-screen="stake" src="/assets/img/screen-stake.webp" alt="" />
+                  <img data-screen="home" src="/assets/img/screen-home.webp" alt="" />
+                  <img data-screen="esim" src="/assets/img/screen-esim.webp" alt="" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="wrap" style="padding: 0 clamp(8px, 1.5vw, 24px); max-width: none">
+        <section class="light pad" id="maths">
+          <div class="wrap">
+            <div class="section-head reveal">
+              <span class="eyebrow">The maths</span>
+              <h2>How much of your bill could your stake pay?</h2>
+              <p>
+                Move the slider. The plan costs £10 a month. Your stake earns rewards, and those rewards pay for as
+                much of the plan as they cover.
+              </p>
+            </div>
+            <div class="calc reveal">
+              <div class="calc-in">
+                <label for="stake">You stake</label>
+                <div class="calc-amount"><output id="stakeOut" for="stake">20</output><span>SOL</span></div>
+                <p class="calc-fiat" id="stakeFiat">&nbsp;</p>
+                <input id="stake" type="range" min="0" max="60" step="0.5" value="20" aria-describedby="calcNote" />
+                <dl class="calc-rows">
+                  <div>
+                    <dt>Rewards each month</dt>
+                    <dd id="rYield">–</dd>
+                  </div>
+                  <div>
+                    <dt>You would pay</dt>
+                    <dd id="rPay">–</dd>
+                  </div>
+                  <div>
+                    <dt>Stake that covers the whole plan</dt>
+                    <dd id="rFull">–</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="calc-out" aria-live="polite">
+                <div class="ring">
+                  <svg viewBox="0 0 200 200" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#d7ff44" />
+                        <stop offset="0.55" stop-color="#1fe4d7" />
+                        <stop offset="1" stop-color="#9c46fd" />
+                      </linearGradient>
+                    </defs>
+                    <circle class="track" cx="100" cy="100" r="88" />
+                    <circle class="bar" id="ringBar" cx="100" cy="100" r="88" stroke-dasharray="552.9" stroke-dashoffset="552.9" />
+                  </svg>
+                  <div class="mid">
+                    <div><b id="pct">0%</b><small>of your plan covered</small></div>
+                  </div>
+                </div>
+                <p class="calc-verdict" id="verdict">&nbsp;</p>
+              </div>
+            </div>
+            <p class="calc-small" id="calcNote">
+              An illustration, not a promise. It uses a reference staking rate of 6.8% a year and
+              <span id="priceSrc">a recent SOL price</span>. Staking rewards and the price of SOL both change, so
+              the share your stake covers will move up and down. Paying the uncovered part of a plan is planned for
+              the mainnet pilot; in the preview, the plan unlocks at 0.5 SOL so anyone can try it.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <section class="pad" id="built">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow">How it's built</span>
+            <h2>Your keys. Your SOL. <span class="grad">Our problem to keep you online.</span></h2>
+          </div>
+          <div class="bento">
+            <article class="card wide glow reveal">
+              <h3>Self-custodial from the first tap.</h3>
+              <p>
+                Mobiloot never holds your SOL. It goes into a standard Solana stake pool, and the lootSOL you get
+                back lives in your own wallet. Only you can sign it away.
+              </p>
+            </article>
+            <article class="card sim reveal" style="--d: 0.06s">
+              <span class="chip"></span><span class="tag">ESIM</span>
+              <h3>A real line, not a voucher.</h3>
+              <p>Unlimited UK data, calls and texts on a live UK mobile network.</p>
+            </article>
+            <article class="card reveal">
+              <span class="big grad">1:1</span>
+              <h3>What you stake is what you get back.</h3>
+              <p>The plan is paid from rewards only. Your principal is never spent.</p>
+            </article>
+            <article class="card glow cyan reveal" style="--d: 0.06s">
+              <h3>Your plan lives on-chain.</h3>
+              <p>
+                Each month's plan is a record written by a Solana program, checked against your stake at the
+                pool's own rate.
+              </p>
+            </article>
+            <article class="card glow violet reveal" style="--d: 0.12s">
+              <h3>Sign in with your wallet.</h3>
+              <p>No email, no password, no account to create. Your wallet is your login.</p>
+            </article>
+            <article class="card half reveal">
+              <h3>Open source, and tested.</h3>
+              <p>
+                The program, the API and the app are public under the MIT licence, with 50 automated tests
+                including an end-to-end run on a real validator.
+              </p>
+              <p><a href="https://github.com/charlienewman/mobiloot">Read the code on GitHub</a></p>
+            </article>
+            <article class="card half reveal" style="--d: 0.06s">
+              <h3>Powered by a live UK MVNO.</h3>
+              <p>
+                Lines are provisioned on Shaka's UK network through its wholesale API. No telco contract, just a
+                smart contract.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="pad" id="status" style="padding-top: 0">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow">Where we are</span>
+            <h2>A working preview, told straight.</h2>
+            <p>
+              Mobiloot was a prize winner at Clock In, the 2026 Solana Mobile hackathon. Here is exactly what
+              works today and what comes next.
+            </p>
+          </div>
+          <div class="status-grid">
+            <article class="stage-card now reveal">
+              <span class="when">Now · Preview</span>
+              <h3>Try the whole flow on devnet.</h3>
+              <p>
+                Stake test SOL, activate a plan and receive a demo eSIM. Test SOL has no monetary value and the
+                demo eSIM does not connect to a network.
+              </p>
+            </article>
+            <article class="stage-card reveal" style="--d: 0.06s">
+              <span class="when">Now · Pilot</span>
+              <h3>Real UK lines for invited wallets.</h3>
+              <p>
+                A small group of pilot wallets receive a real eSIM on a live UK network.
+                <a href="mailto:support@mobiloot.com?subject=Mobiloot%20pilot">Ask to join the pilot.</a>
+              </p>
+            </article>
+            <article class="stage-card reveal" style="--d: 0.12s">
+              <span class="when">Next · Mainnet</span>
+              <h3>Real stake, real plans, for everyone.</h3>
+              <p>
+                A mainnet pool under multisig control, with a way to pay the part of the plan your rewards do not
+                cover.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="pad" id="faq" style="padding-top: 0">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow">Questions</span>
+            <h2>The ones worth asking.</h2>
+          </div>
+          <div class="faq reveal">
+            <details>
+              <summary>Is this live with real money?</summary>
+              <p>
+                Not yet. The public app is a preview on Solana's devnet, a test network whose SOL has no monetary
+                value. Everyone can try the full flow with a demo eSIM. Real UK lines are limited to invited pilot
+                wallets while we prepare the mainnet launch.
+              </p>
+            </details>
+            <details>
+              <summary>Where does my SOL go, and can I get it back?</summary>
+              <p>
+                It goes into an SPL stake pool, the standard Solana program for pooled staking, and you receive
+                lootSOL in your own wallet in return. Mobiloot cannot move or spend it. You can withdraw at any
+                time, one SOL for each lootSOL, with no withdrawal fee from Mobiloot.
+              </p>
+            </details>
+            <details>
+              <summary>What happens to my line if I withdraw?</summary>
+              <p>
+                The plan is paid by your stake's rewards, so if your stake drops below what the plan needs, the
+                line is suspended at the next check. Stake again and it resumes.
+              </p>
+            </details>
+            <details>
+              <summary>What if my rewards don't cover the full £10?</summary>
+              <p>
+                Then your stake covers part of the plan and you pay the rest. That top-up is planned for the
+                mainnet pilot. In the preview, the plan unlocks at 0.5 SOL so anyone can try it.
+              </p>
+            </details>
+            <details>
+              <summary>Which phones does it work on?</summary>
+              <p>
+                Mobiloot is built for the Solana Seeker. It also runs on other Android phones that support eSIM
+                and have a wallet that speaks Mobile Wallet Adapter. The mobile plan itself is UK only for now.
+              </p>
+            </details>
+            <details>
+              <summary>Who runs the mobile network?</summary>
+              <p>
+                Lines are provided by <a href="https://shaka.tel">Shaka</a>, a UK mobile virtual network operator,
+                through its wholesale API. Mobiloot is an independent project by Charlie Newman, who is a minority
+                shareholder in Shaka. Mobiloot is not run or funded by Shaka.
+              </p>
+            </details>
+            <details>
+              <summary>What are the risks?</summary>
+              <p>
+                Staking is not risk free. The price of SOL can fall, staking rewards vary, and smart contracts can
+                have faults. Nothing on this site is financial advice. Only stake what you are comfortable
+                leaving staked.
+              </p>
+            </details>
+            <details>
+              <summary>What data do you keep, and can I delete it?</summary>
+              <p>
+                Your wallet address, your sign-in sessions and the details of your eSIM order. No name, no email,
+                no card. Email <a href="mailto:support@mobiloot.com">support@mobiloot.com</a> to have it deleted.
+                The <a href="/privacy/">privacy policy</a> has the detail.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing pad" id="get" style="padding-top: 40px">
+        <div class="wrap">
+          <img class="loopmark reveal" src="/assets/img/mobiloot-loop.svg" alt="" width="200" height="200" />
+          <h2 class="reveal">Stake once.<br /><span class="grad">Stay connected.</span></h2>
+          <div class="cta reveal" style="--d: 0.08s">
+            <a class="btn btn-primary" href="https://github.com/charlienewman/mobiloot/releases/latest">Download the Android preview</a>
+            <a class="btn btn-ghost" href="mailto:support@mobiloot.com?subject=Mobiloot%20pilot">Join the pilot</a>
+          </div>
+          <p class="hero-note reveal" style="--d: 0.12s">
+            Android APK for Seeker and other eSIM phones. Coming to the Solana dApp Store.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="foot">
+          <div>
+            <img src="/assets/img/mobiloot-wordmark-on-dark.svg" alt="mobiloot" width="130" height="24" />
+            <p style="margin-top: 16px; max-width: 24em">A mobile plan paid for by your staking rewards.</p>
+          </div>
+          <div>
+            <h4>Product</h4>
+            <ul>
+              <li><a href="/#how">How it works</a></li>
+              <li><a href="/#maths">The maths</a></li>
+              <li><a href="https://github.com/charlienewman/mobiloot">GitHub</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Company</h4>
+            <ul>
+              <li><a href="mailto:support@mobiloot.com">support@mobiloot.com</a></li>
+              <li><a href="/privacy/">Privacy policy</a></li>
+              <li><a href="/terms/">Terms of use</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="fine">
+          <p>
+            Mobiloot is a preview running on Solana devnet. Test SOL has no monetary value. Nothing on this site is
+            financial advice or an offer of a regulated financial service. Staking involves risk, including the loss
+            of value of staked assets; rewards vary and are not guaranteed.
+          </p>
+          <p>
+            Mobiloot is an independent project by Charlie Newman, United Kingdom. Live eSIMs are provided by Shaka,
+            in which Charlie Newman is a minority shareholder. © 2026 Mobiloot.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/assets/main.js" defer></script>
+  </body>
+</html>
