@@ -139,7 +139,8 @@ Yes, everything is in this repo:
 - the API: [api](api);
 - the threat model: [docs/threat-model.md](docs/threat-model.md).
 
-`npm test` runs 44 tests, covering:
+`npm test` runs 50 tests (with a local validator running), covering:
+- the program's guards on a real validator, including the stake pool owner pin;
 - Sign In With Solana replay and forgery;
 - entitlement checks;
 - idempotent eSIM orders;
@@ -151,29 +152,46 @@ Yes, everything is in this repo:
 The hackathon's advisory scanner (Radiants) audited commit `ade54a5`. It reported
 40 findings (2 high, 13 medium, 21 low, 4 info) and gave no score, because its scan
 did not finish (budget exhausted, unresolved calls). The two high findings are not
-exploitable as written.
+exploitable as written, and the first is now closed in code anyway.
 
-**High: "missing owner check" on `stake_pool` in `initialize`.** Only the program's
-upgrade authority can call `initialize`:
+**High: "missing owner check" on `stake_pool` in `initialize`. Fixed in `0f4fffa`.**
+`initialize` now only accepts a pool owned by Sanctum's SPL stake pool program
+([lib.rs:217](anchor/programs/mobiloot/src/lib.rs#L217)); anything else fails with
+`UntrustedStakePoolProgram`. A regression test
+([initialize-guard.test.ts](shared/test/initialize-guard.test.ts)) starts a validator,
+loads two accounts with identical pool bytes under different owners, and checks that
+the spoofed one is rejected and the genuine one accepted.
+
+It was not exploitable before the fix either. Only the program's upgrade authority can
+call `initialize`:
 - the `program_data` constraints check this
-  ([lib.rs:215–217](anchor/programs/mobiloot/src/lib.rs#L215-L217));
+  ([lib.rs:220–223](anchor/programs/mobiloot/src/lib.rs#L220-L223));
 - it can only run once, because it creates the single `config` PDA
-  ([lib.rs:209](anchor/programs/mobiloot/src/lib.rs#L209)).
+  ([lib.rs:213](anchor/programs/mobiloot/src/lib.rs#L213)).
 
-So no outside caller can pass a fake pool. The pool's address and owning program are
-recorded at setup, and every `activate` pins the account to both
-([lib.rs:237](anchor/programs/mobiloot/src/lib.rs#L237)). Planned hardening for mainnet
-(defence in depth against operator error): pin the owner to the known stake pool
-program ID at `initialize`.
+Every `activate` also pins the pool account to the recorded address and owner
+([lib.rs:242](anchor/programs/mobiloot/src/lib.rs#L242)).
 
 **High: "type cosplay" in `read_pool`.** `read_pool` checks the SPL stake pool's
 account-type byte. Its only user-facing caller, `activate`, accepts nothing but the
 configured pool address owned by the configured stake pool program, so a look-alike
 account is rejected before it is read.
 
-**Medium: dependency advisories (8).** Known advisories in third-party npm and cargo
-packages. They will be reviewed and upgraded before mainnet, alongside the rest of the
-medium and low findings, most of which the scanner marks "needs review".
+**Medium: dependency advisories.** Reviewed in November 2026:
+- npm: every advisory with a compatible fix is applied (`npm audit fix`), and the app
+  is on the patch versions Expo SDK 55 expects. What remains in the API and tooling is
+  four moderate advisories in `uuid` and `stream-json`, both pulled in by
+  `@solana/web3.js` 1.x through `jayson`. The fix is a breaking change inside web3.js's
+  own dependency, so it waits for an upstream release. Neither code path handles
+  untrusted input here.
+- cargo: `cargo audit` reports no vulnerabilities. It gives three warnings
+  (`bincode` and `libsecp256k1` unmaintained, `rand` 0.7 unsound with a custom logger),
+  all inherited from the Solana and Anchor crates.
+- container: the API image is pinned by digest and the server runs as the unprivileged
+  `node` user ([api/Dockerfile](api/Dockerfile)).
+
+The remaining medium and low findings, most of which the scanner marks "needs review",
+will be worked through before mainnet.
 
 ## Run it
 
