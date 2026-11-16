@@ -19,7 +19,9 @@ fi
 cd "$ROOT/app"
 npx expo prebuild -p android --no-install
 cd android
-./gradlew assembleRelease -q
+# arm64 only: it is what the Seeker and every current Android phone runs, and it keeps the APK small.
+# Set MOBILOOT_ABIS=arm64-v8a,x86_64 to also run on an emulator.
+./gradlew assembleRelease -q -PreactNativeArchitectures="${MOBILOOT_ABIS:-arm64-v8a}"
 APK=app/build/outputs/apk/release/app-release-unsigned.apk
 [[ -f $APK ]] || APK=app/build/outputs/apk/release/app-release.apk
 OUT="$ROOT/dist/mobiloot-$(node -p "require('$ROOT/app/app.json').expo.version").apk"
