@@ -33,8 +33,8 @@ You need an Android phone (a Seeker is ideal) with a Mobile Wallet Adapter walle
 the Seeker's own wallet or Phantom.
 
 1. **Install the APK:**
-   [mobiloot-0.1.0.apk](https://github.com/charlienewman/mobiloot/releases/download/v0.1.0/mobiloot-0.1.0.apk)
-   (also on the [v0.1.0 release](https://github.com/charlienewman/mobiloot/releases/tag/v0.1.0)).
+   [mobiloot-0.2.1.apk](https://github.com/charlienewman/mobiloot/releases/download/v0.2.1/mobiloot-0.2.1.apk)
+   (also on the [v0.2.1 release](https://github.com/charlienewman/mobiloot/releases/tag/v0.2.1)).
 2. **Switch your wallet to devnet.** Mobiloot runs on devnet, so no real money is
    involved. In the Seeker wallet, change the network to Devnet in its settings.
    In Phantom, go to Settings → Developer Settings → Testnet Mode → Solana Devnet.
