@@ -1,4 +1,4 @@
-# Solana dApp Store listing: Mobiloot 0.2.0
+# Solana dApp Store listing: Mobiloot 0.2.1
 
 Copy and assets for the publisher portal (publish.solanamobile.com). Limits in brackets.
 
@@ -7,14 +7,15 @@ Copy and assets for the publisher portal (publish.solanamobile.com). Limits in b
 | App name (≤25) | Mobiloot |
 | Short description (≤50) | Staking rewards pay your phone bill. Devnet. |
 | Package | `com.mobiloot.app` |
-| Version | 0.2.0 (versionCode 2) |
+| Version | 0.2.1 (versionCode 3) |
+| APK | `../../dist/mobiloot-0.2.1.apk` (git-ignored; also on the v0.2.1 GitHub release) |
 | Website | https://mobiloot.com |
 | Privacy policy | https://mobiloot.com/privacy/ |
 | Terms | https://mobiloot.com/terms/ |
 | Support and contact email | support@mobiloot.com |
 | Icon (512×512, no transparency) | `icon-512.png` |
 | Banner (1200×600) | `banner-1200x600.png` |
-| Screenshots (4–8, all one 9:16 size, 1080 px+) | `screenshots/` (to be captured from the 0.2.0 build on a Seeker) |
+| Screenshots (4–8, all one 9:16 size, 1080 px+) | `screenshots-9x16/` (1502×2670, padded) or `screenshots/` (1200×2670, Seeker native); captured from 0.2.1 on a Seeker |
 
 ## Long description
 
@@ -45,6 +46,7 @@ Mobiloot was a prize winner at Clock In, the 2026 Solana Mobile hackathon.
 
 First release on the dApp Store.
 • New look, with the Mobiloot loop logo.
+• Works with Phantom and other full-screen wallets, as well as the Seeker wallet.
 • Delete your account and data from the Account tab.
 • Privacy policy, terms and support links inside the app.
 • Security and dependency updates.
