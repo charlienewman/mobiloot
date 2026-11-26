@@ -1,4 +1,5 @@
 import { API_URL } from '@/constants/env'
+import { withForegroundRetry } from './foreground'
 
 export class ApiError extends Error {
   constructor(
@@ -12,14 +13,18 @@ export class ApiError extends Error {
 export async function api<T>(path: string, init: { method?: string; body?: unknown; token?: string } = {}): Promise<T> {
   let res: Response
   try {
-    res = await fetch(API_URL + path, {
-      method: init.method ?? 'GET',
-      headers: {
-        ...(init.body !== undefined ? { 'content-type': 'application/json' } : {}),
-        ...(init.token ? { authorization: `Bearer ${init.token}` } : {}),
-      },
-      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
-    })
+    // Retries only when no response came back at all (see foreground.ts); every API
+    // route is safe to repeat in that case (orders are idempotent, nonces single-use).
+    res = await withForegroundRetry(() =>
+      fetch(API_URL + path, {
+        method: init.method ?? 'GET',
+        headers: {
+          ...(init.body !== undefined ? { 'content-type': 'application/json' } : {}),
+          ...(init.token ? { authorization: `Bearer ${init.token}` } : {}),
+        },
+        body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      }),
+    )
   } catch {
     throw new ApiError(0, "Can't reach Mobiloot right now. Check your connection.")
   }

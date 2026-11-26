@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mobiloot",
     "slug": "mobiloot",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mobiloot",
@@ -19,7 +19,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.mobiloot.app",
-      "versionCode": 2
+      "versionCode": 3
     },
     "plugins": [
       "expo-font",

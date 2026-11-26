@@ -4,8 +4,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { fromUint8Array, useMobileWallet } from '@wallet-ui/react-native-web3js'
 import * as SecureStore from 'expo-secure-store'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { PublicKey } from '@solana/web3.js'
 import { Buffer } from 'buffer'
 import { api } from './api'
+import { whenForeground } from './foreground'
 
 interface Session {
   address: string
@@ -68,7 +70,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setError(undefined)
     try {
       const input = await api<Record<string, string>>('/v1/auth/challenge', { method: 'POST' })
-      const result = await wallet.signIn(input)
+      let result: { signedMessage: Uint8Array; signature: Uint8Array; account?: unknown }
+      try {
+        result = await wallet.signIn(input)
+      } catch (e: any) {
+        // Phantom skips Sign In With Solana when it re-authorizes an app it already knows,
+        // and returns no sign-in result. Sign the same message as a plain message instead.
+        if (!/Sign in result not retrieved/i.test(String(e?.message))) throw e
+        result = await signInWithMessage(wallet, input)
+      }
+      // A full-screen wallet leaves us in the background, where Android 16 has no network.
+      await whenForeground()
       const signedMessage = unwrapBase64(result.signedMessage, (b) =>
         b.toString('utf8').includes(' wants you to sign in'),
       )
@@ -160,4 +172,50 @@ function accountAddress(account: any): string {
   if (account?.publicKey?.toBase58) return account.publicKey.toBase58()
   if (account?.address?.toBase58) return account.address.toBase58()
   return String(account?.address ?? '')
+}
+
+/** The SIWS message text, in the exact format the server's `verifySignIn` parses. */
+export function formatSiwsMessage(input: Record<string, string>, address: string): string {
+  return [
+    `${input.domain} wants you to sign in with your Solana account:`,
+    address,
+    '',
+    input.statement,
+    '',
+    `URI: ${input.uri}`,
+    `Version: ${input.version}`,
+    `Chain ID: ${input.chainId}`,
+    `Nonce: ${input.nonce}`,
+    `Issued At: ${input.issuedAt}`,
+    `Expiration Time: ${input.expirationTime}`,
+  ].join('\n')
+}
+
+/**
+ * Splits a `sign_messages` result into the 64-byte signature. Mobile Wallet Adapter
+ * returns the message with the signature appended; some wallets return only the signature.
+ */
+export function signatureFromSignedPayload(message: Uint8Array, signed: Uint8Array): Uint8Array {
+  if (signed.length === 64) return signed
+  if (signed.length === message.length + 64) return signed.slice(message.length)
+  throw new Error('Unexpected signed message from wallet.')
+}
+
+/** Fallback sign-in: authorize, then sign the SIWS text with `sign_messages`, in one wallet handoff. */
+async function signInWithMessage(
+  wallet: ReturnType<typeof useMobileWallet>,
+  input: Record<string, string>,
+): Promise<{ signedMessage: Uint8Array; signature: Uint8Array }> {
+  const { chain, identity } = wallet as unknown as { chain: string; identity: any }
+  let out: { signedMessage: Uint8Array; signature: Uint8Array } | undefined
+  await wallet.connectAnd(async (w: any) => {
+    const auth = await w.authorize({ chain, identity })
+    const addressBase64: string = auth.accounts[0].address
+    const address = new PublicKey(Buffer.from(addressBase64, 'base64')).toBase58()
+    const message = new Uint8Array(Buffer.from(formatSiwsMessage(input, address), 'utf8'))
+    const [signed] = await w.signMessages({ addresses: [addressBase64], payloads: [message] })
+    out = { signedMessage: message, signature: signatureFromSignedPayload(message, new Uint8Array(signed)) }
+  })
+  if (!out) throw new Error('Sign-in was not completed in your wallet.')
+  return out
 }

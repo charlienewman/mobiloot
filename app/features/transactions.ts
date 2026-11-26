@@ -22,6 +22,7 @@ import {
   mobilootErrorMessage,
 } from '@mobiloot/shared'
 import { useMobiloot } from './config'
+import { withForegroundRetry } from './foreground'
 import { describeWalletError, useSession } from './session'
 
 export type TxStep = 'idle' | 'preparing' | 'wallet' | 'confirming' | 'done' | 'error'
@@ -65,7 +66,8 @@ export function useTransactions() {
           // Wallets can't reach a laptop validator, and some (the Seeker's own) only send to
           // mainnet, so off mainnet the wallet just signs and we send it ourselves.
           const signed = await wallet.signTransaction(tx)
-          signature = await connection.sendRawTransaction(signed.serialize())
+          // Resending the same signed transaction is harmless; see foreground.ts.
+          signature = await withForegroundRetry(() => connection.sendRawTransaction(signed.serialize()))
         } else {
           signature = await wallet.signAndSendTransaction(tx, context.slot)
         }
